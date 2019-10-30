@@ -29,12 +29,6 @@ interface AccessTypesInterface
     public static function getAccessTypesPattern(): string;
 
     /**
-     * Returns access types weights
-     * @return array
-     */
-    public static function getAccessTypesWeights(): array;
-
-    /**
      * Returns access roles
      * @param string $accessType
      * @return array|null

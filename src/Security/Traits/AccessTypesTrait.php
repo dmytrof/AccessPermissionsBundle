@@ -37,17 +37,6 @@ trait AccessTypesTrait
 
     /**
      * @inheritDoc
-     * @see AccessTypesInterface::getAccessTypes()
-     */
-    public static function getAccessTypesWeights(): array
-    {
-        self::_checkAccessTypesRequirements();
-        return static::getConstant('ACCESS_TYPES_WEIGHTS');
-    }
-
-
-    /**
-     * @inheritDoc
      * @see AccessTypesInterface::getAccessTypesWeights()
      */
     public static function getAccessTypeRoles(string $accessType): ?array
