@@ -25,5 +25,8 @@
         "psr-4": {
             "Dmytrof\\AccessPermissionsBundle\\": "src/"
         }
+    },
+    "suggest": {
+        "symfony/security": "Adds access permissions for administrator for entities and other resources"
     }
 }
