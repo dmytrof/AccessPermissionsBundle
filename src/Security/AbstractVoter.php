@@ -189,6 +189,22 @@ abstract class AbstractVoter extends Voter
     }
 
     /**
+     * Checks if admin has access to attribute
+     * @param string $attribute
+     * @param TokenInterface $token
+     * @param null $subject
+     * @return bool
+     */
+    protected function canRoleAdmin(string $attribute, TokenInterface $token, $subject = null): bool
+    {
+        $admin = $token->getUser();
+        if (!$admin instanceof AdminInterface) {
+            return true;
+        }
+        return in_array($attribute, $admin->getAdminAccessAttributes());
+    }
+
+    /**
      * Decides if role can do attribute action for subject
      * @param string $role
      * @param string $attribute
