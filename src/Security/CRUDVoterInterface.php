@@ -11,7 +11,7 @@
 
 namespace Dmytrof\AccessPermissionsBundle\Security;
 
-interface CRUDVoterInterface extends AccessTypesInterface
+interface CRUDVoterInterface
 {
     /**
      * Returns VIEW attribute

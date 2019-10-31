@@ -11,7 +11,7 @@
 
 namespace Dmytrof\AccessPermissionsBundle\Model\Traits;
 
-use Dmytrof\AccessPermissionsBundle\Security\{AbstractVoter, AccessTypesInterface};
+use Dmytrof\AccessPermissionsBundle\Security\{AbstractVoter, RolesInterface};
 
 trait AccessTypeChecker
 {
@@ -64,7 +64,7 @@ trait AccessTypeChecker
     {
         $key = $accessType.$minimalAccessType;
         if (!isset(static::$_accessTypeChecks[$key])) {
-            static::$_accessTypeChecks[$key] = in_array($accessType, static::getAccessTypeWithSuperiors($minimalAccessType ?: AccessTypesInterface::ACCESS_TYPE_GUEST));
+            static::$_accessTypeChecks[$key] = in_array($accessType, static::getAccessTypeWithSuperiors($minimalAccessType ?: RolesInterface::ACCESS_TYPE_GUEST));
         }
         return static::$_accessTypeChecks[$key];
     }

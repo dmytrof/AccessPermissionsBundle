@@ -40,7 +40,7 @@ class VotersContainer implements \IteratorAggregate
 	protected $attributeDescriptionsCollection;
 
     /**
-     * SecurityVotersContainer constructor.
+     * VotersContainer constructor.
      * @param TranslatorInterface $translator
      * @param iterable $voters
      */

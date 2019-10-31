@@ -11,18 +11,14 @@
 
 namespace Dmytrof\AccessPermissionsBundle\Security;
 
-use Symfony\Component\Security\Core\{
-    Authentication\Token\TokenInterface, Authorization\AccessDecisionManagerInterface, Authorization\Voter\Voter
-};
+use Symfony\Component\Security\Core\{Authentication\Token\TokenInterface, Authorization\Voter\Voter};
 use Dmytrof\AccessPermissionsBundle\{Exception\BadMethodCallException,
     Exception\RuntimeException,
     Exception\VoterException,
-    Security\Traits\AccessTypesTrait};
+    Service\RolesContainer};
 
-abstract class AbstractVoter extends Voter implements AccessTypesInterface
+abstract class AbstractVoter extends Voter
 {
-    use AccessTypesTrait;
-
     protected const SUBJECT = null;
     public const PREFIX = '';
 
@@ -31,25 +27,25 @@ abstract class AbstractVoter extends Voter implements AccessTypesInterface
     public const ATTRIBUTES = [];
 
     /**
-     * @var AccessDecisionManagerInterface
+     * @var RolesContainer
      */
-    protected $decisionManager;
+    protected $rolesContainer;
 
     /**
      * AbstractVoter constructor.
-     * @param AccessDecisionManagerInterface $decisionManager
+     * @param RolesContainer $rolesContainer
      */
-    public function __construct(AccessDecisionManagerInterface $decisionManager)
+    public function __construct(RolesContainer $rolesContainer)
     {
-        $this->decisionManager = $decisionManager;
+        $this->rolesContainer = $rolesContainer;
     }
 
     /**
-     * @return AccessDecisionManagerInterface
+     * @return RolesContainer
      */
-    protected function getDecisionManager(): AccessDecisionManagerInterface
+    public function getRolesContainer(): RolesContainer
     {
-        return $this->decisionManager;
+        return $this->rolesContainer;
     }
 
     /**
@@ -170,61 +166,52 @@ abstract class AbstractVoter extends Voter implements AccessTypesInterface
      */
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
     {
-        $method = 'can'.ucfirst($this->getAccessType($token)).ucfirst($this->getShortAttribute($attribute));
-        return $this->$method($token, $subject);
-    }
-
-    /**
-     * Returns access for token
-     * @param TokenInterface $token
-     * @return string
-     */
-    protected function getAccessType(TokenInterface $token): string
-    {
-        foreach ($this->getAccessTypes() as $access) {
-            if ($this->decisionManager->decide($token, $this->getAccessTypeRoles($access))) {
-                return $access;
+        foreach ($token->getRoleNames() as $role) {
+            $method = 'can'.$this->getRolesContainer()->classifyRole($role).ucfirst($this->getShortAttribute($attribute));
+            if ($this->$method($token, $subject)) {
+                return true;
             }
         }
-        return static::ACCESS_TYPE_GUEST;
+
+        return false;
     }
 
     /**
-     * SuperAdmin can do anything
+     * ROLE_SUPER_ADMIN can do anything
      * @param string $attribute
      * @param TokenInterface $token
      * @param null $subject
      * @return bool
      */
-    protected function canSuperAdmin(string $attribute, TokenInterface $token, $subject = null): bool
+    protected function canRoleSuperAdmin(string $attribute, TokenInterface $token, $subject = null): bool
     {
         return true;
     }
 
     /**
-     * Decides if accessType can do attribute action for subject
-     * @param string $accessType
+     * Decides if role can do attribute action for subject
+     * @param string $role
      * @param string $attribute
      * @param TokenInterface $token
      * @param null $subject
      * @return bool
      */
-    protected function can(string $accessType, string $attribute, TokenInterface $token, $subject = null): bool
+    protected function can(string $role, string $attribute, TokenInterface $token, $subject = null): bool
     {
         return false;
     }
 
     public function __call($name, $arguments)
     {
-        if (preg_match('/^can('.$this->getAccessTypesPattern().')$/s', $name,$matches)) {
+        if (preg_match('/^can('.$this->getRolesContainer()->getRolesPattern().')$/s', $name,$matches)) {
             $args = $arguments; // [attribute, token, ?subject]
-            array_unshift($args, lcfirst($matches[1])); // access
-            return $this->can(...$args); // (access, attribute, token, ?subject)
+            array_unshift($args, $this->getRolesContainer()->declassifyRole($matches[1])); // role
+            return $this->can(...$args); // (role, attribute, token, ?subject)
         }
-        if (preg_match('/^can('.$this->getAccessTypesPattern().')('.$this->getShortAttributesPattern().')$/s', $name,$matches)) {
+        if (preg_match('/^can('.$this->getRolesContainer()->getRolesPattern().')('.$this->getShortAttributesPattern().')$/s', $name,$matches)) {
             $args = $arguments; // [token, ?subject]
             array_unshift($args, $this->getAttributeFromShort(lcfirst($matches[2]))); // attribute
-            $methodName = 'can'.$matches[1]; // with access
+            $methodName = 'can'.$matches[1]; // with role
             return $this->$methodName(...$args); // (attribute, token, ?subject)
         }
 
