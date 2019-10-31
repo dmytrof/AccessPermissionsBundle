@@ -10,7 +10,7 @@ services:
         resource: '../../*'
         exclude: '../../{Entity, Model, Tests}'
 
-    IDmytrof\AccessPermissionsBundle\Service\VotersContainer:
+    Dmytrof\AccessPermissionsBundle\Service\VotersContainer:
         public: true
         arguments:
             $voters: !tagged 'dmytrof.access_permissions.voter'
