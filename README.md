@@ -116,7 +116,7 @@ and install security component to your project.
             {
                 $this->denyAccessUnlessGranted(ArticleVoter::getViewAttribute());
         
-                // Fetch article from DB and return
+                // Fetch article from DB and return response
             }
         }
         
@@ -138,7 +138,7 @@ At this moment AccessDecisionManager "asks" ArticleVoter if canRoleAdmin to view
         }
         
 
-You can write "can-method" for any defined role, which defined at security.yaml:
+You can write "can-method" for any role which is defined at security.yaml:
         
         security:
             role_hierarchy:
@@ -148,6 +148,7 @@ You can write "can-method" for any defined role, which defined at security.yaml:
                 
 or added to RolesContainer:
 
+        /** @var \Dmytrof\AccessPermissionsBundle\Service\RolesContainer $rolesContainer */
         $rolesContainer->addRole('ROLE_ANY');
         
 Add **canRoleAuthorEdit** (where RoleAuthor - classified role ROLE_AUTHOR, Edit - short 
