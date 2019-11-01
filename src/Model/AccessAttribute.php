@@ -30,6 +30,15 @@ class AccessAttribute
     protected $attribute;
 
     /**
+     * AccessAttribute constructor.
+     * @param string|null $attribute
+     */
+    public function __construct(string $attribute = null)
+    {
+        $this->setAttribute($attribute);
+    }
+
+    /**
      * Returns id
      * @return int|null
      */
@@ -46,7 +55,6 @@ class AccessAttribute
     public function setId(int $id): self
     {
         $this->id = $id;
-
         return $this;
     }
 

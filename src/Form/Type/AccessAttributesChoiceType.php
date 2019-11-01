@@ -15,7 +15,7 @@ use Dmytrof\AccessPermissionsBundle\Service\VotersContainer;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\{AbstractType, Extension\Core\Type\ChoiceType, FormBuilderInterface};
 
-class SecurityAccessAttributesType extends AbstractType
+class AccessAttributesChoiceType extends AbstractType
 {
     /**
      * @var VotersContainer
