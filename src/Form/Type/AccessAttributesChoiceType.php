@@ -11,24 +11,28 @@
 
 namespace Dmytrof\AccessPermissionsBundle\Form\Type;
 
-use Dmytrof\AccessPermissionsBundle\Service\VotersContainer;
+use Dmytrof\AccessPermissionsBundle\Form\DataTransformer\AccessAttributeToStringTransformer;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\{AbstractType, Extension\Core\Type\ChoiceType, FormBuilderInterface};
+use Symfony\Component\Form\{AbstractType,
+    CallbackTransformer,
+    Extension\Core\Type\ChoiceType,
+    FormBuilderInterface};
 
 class AccessAttributesChoiceType extends AbstractType
 {
     /**
-     * @var VotersContainer
+     * @var AccessAttributeToStringTransformer
      */
-    protected $votersContainer;
+    protected $transformer;
 
     /**
-     * SecurityAccessAttributesType constructor.
-     * @param VotersContainer $votersContainer
+     * AccessAttributesChoiceType constructor.
+     * @param AccessAttributeToStringTransformer $transformer
      */
-    public function __construct(VotersContainer $votersContainer)
+    public function __construct(AccessAttributeToStringTransformer $transformer)
     {
-        $this->votersContainer = $votersContainer;
+        $this->transformer = $transformer;
     }
 
     /**
@@ -37,9 +41,10 @@ class AccessAttributesChoiceType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'choices' => $this->votersContainer->getAllAttributes(),
+            'choices' => $this->transformer->getAttributes(),
             'label' => 'label.security.access_attributes',
             'multiple' => true,
+            'by_reference' => false,
         ]);
     }
 
@@ -48,8 +53,25 @@ class AccessAttributesChoiceType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder->resetViewTransformers();
-        $builder->resetModelTransformers();
+        $builder
+            ->resetViewTransformers()
+            ->resetModelTransformers();
+
+        $transformer = $this->transformer;
+        $builder->addViewTransformer(new CallbackTransformer(function ($value) {
+            return $value;
+        }, function ($value) use ($transformer) {
+            $collection = new ArrayCollection();
+            if (is_array($value)) {
+                foreach ($value as $val) {
+                    $entity = $transformer->reverseTransform($val);
+                    if ($entity) {
+                        $collection->add($entity);
+                    }
+                }
+            }
+            return $collection;
+        }));
     }
 
     /**

@@ -24,7 +24,7 @@ class AccessAttributesCollectionType extends AbstractType
         $resolver->setDefaults([
             'allow_add' => true,
             'allow_delete' => true,
-            'delete_empty' => true,
+//            'delete_empty' => true,
             'by_reference' => false,
             'entry_type' => AccessAttributeType::class,
         ]);

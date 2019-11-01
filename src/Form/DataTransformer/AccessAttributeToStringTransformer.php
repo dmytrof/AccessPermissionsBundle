@@ -16,7 +16,7 @@ use Dmytrof\AccessPermissionsBundle\{Exception\InvalidArgumentException,
     Entity\AccessAttribute\AccessAttribute,
     Service\VotersContainer};
 use Symfony\Bridge\Doctrine\RegistryInterface;
-use Symfony\Component\Form\DataTransformerInterface;
+use Symfony\Component\Form\{DataTransformerInterface, Exception\TransformationFailedException};
 
 class AccessAttributeToStringTransformer implements DataTransformerInterface
 {
@@ -69,6 +69,15 @@ class AccessAttributeToStringTransformer implements DataTransformerInterface
     }
 
     /**
+     * Returns attributes
+     * @return array
+     */
+    public function getAttributes(): array
+    {
+        return $this->attributes;
+    }
+
+    /**
      * @inheritDoc
      */
     public function transform($value)
@@ -84,7 +93,14 @@ class AccessAttributeToStringTransformer implements DataTransformerInterface
      */
     public function reverseTransform($value)
     {
-        if ($value && in_array($value, $this->attributes)) {
+        if ($value) {
+            if (!in_array($value, $this->getAttributes())) {
+                $failure = new TransformationFailedException(sprintf('Undefined access attribute %s', $value));
+                $failure->setInvalidMessage('The given "{{ value }}" value is not a valid access attribute.', [
+                    '{{ value }}' => $value,
+                ]);
+                throw $failure;
+            }
             $entity = $this->registry->getRepository($this->entityClass)->findItemByAttribute($value);
             if (!$entity) {
                 $class = $this->entityClass;
