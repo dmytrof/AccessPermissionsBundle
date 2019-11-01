@@ -86,7 +86,7 @@ class AccessAttributeToStringTransformer implements DataTransformerInterface
     {
         if ($value && in_array($value, $this->attributes)) {
             $entity = $this->registry->getRepository($this->entityClass)->findItemByAttribute($value);
-            if ($entity) {
+            if (!$entity) {
                 $class = $this->entityClass;
                 $entity = new $class($value);
             }
