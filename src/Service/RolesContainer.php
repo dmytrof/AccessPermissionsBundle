@@ -28,9 +28,9 @@ class RolesContainer implements \IteratorAggregate
     public function __construct(array $systemRoles)
     {
         $roles = [];
-        array_walk_recursive($systemRoles, function($role) use (&$roles) {
-            array_push($roles, $role);
-        });
+        foreach ($systemRoles as $role => $inheritedRoles) {
+            array_push($roles, $role, ...$inheritedRoles);
+        }
         $this->roles = array_unique($roles);
     }
 
