@@ -26,6 +26,11 @@ class AttributeComponents
     protected $vendor;
 
     /**
+     * @var bool
+     */
+    protected $useModule;
+
+    /**
      * @var string
      */
     protected $module;
@@ -43,17 +48,32 @@ class AttributeComponents
     /**
      * AttributeComponents constructor.
      * @param string $attribute
+     * @param bool $useModule
      */
-    public function __construct(string $attribute)
+    public function __construct(string $attribute, bool $useModule = false)
     {
+        $this->useModule = $useModule;
+
         $parts = explode(static::ATTRIBUTE_DELIMITER, $attribute);
-        if (sizeof($parts) != 4) {
-            throw new InvalidArgumentException(sprintf('Attribute must consist of 4 parts delimited with ".". Input was: %s', $attribute));
+        $neededPartsCount = $this->isUseModule() ? 4 : 3;
+        if (sizeof($parts) != $neededPartsCount) {
+            throw new InvalidArgumentException(sprintf('Attribute must consist of %s parts delimited with ".". Input was: %s', $neededPartsCount, $attribute));
         }
         $this->vendor = array_shift($parts);
-        $this->module = array_shift($parts);
+        if ($this->isUseModule()) {
+            $this->module = array_shift($parts);
+        }
         $this->subject = array_shift($parts);
         $this->attribute = array_shift($parts);
+    }
+
+    /**
+     * Checks if module is used in attribute
+     * @return bool
+     */
+    public function isUseModule(): bool
+    {
+        return $this->useModule;
     }
 
     /**
@@ -102,11 +122,14 @@ class AttributeComponents
      */
     public function getModuleLabelKey(): string
     {
-        return $this->generateTranslationKey([
+        $parts = [
             $this->getVendor(),
-            $this->getModule(),
-            static::TRANSLATION_KEY_LABEL,
-        ]);
+        ];
+        if ($this->isUseModule()) {
+            array_push($parts, $this->getModule());
+        }
+        array_push($parts, static::TRANSLATION_KEY_LABEL);
+        return $this->generateTranslationKey($parts);
     }
 
     /**
@@ -124,13 +147,18 @@ class AttributeComponents
      */
     public function getSubjectLabelKey(): string
     {
-        return $this->generateTranslationKey([
+        $parts = [
             $this->getVendor(),
-            $this->getModule(),
+        ];
+        if ($this->isUseModule()) {
+            array_push($parts, $this->getModule());
+        }
+        array_push($parts, ...[
             'subjects',
             $this->getSubject(),
             static::TRANSLATION_KEY_LABEL,
         ]);
+        return $this->generateTranslationKey($parts);
     }
 
     /**
@@ -148,15 +176,20 @@ class AttributeComponents
      */
     public function getAttributeLabelKey(): string
     {
-        return $this->generateTranslationKey([
+        $parts = [
             $this->getVendor(),
-            $this->getModule(),
+        ];
+        if ($this->isUseModule()) {
+            array_push($parts, $this->getModule());
+        }
+        array_push($parts, ...[
             'subjects',
             $this->getSubject(),
             'attributes',
             $this->getAttribute(),
             static::TRANSLATION_KEY_LABEL,
         ]);
+        return $this->generateTranslationKey($parts);
     }
 
     /**
@@ -165,24 +198,28 @@ class AttributeComponents
      */
     public function getAttributeLabelKeys(): array
     {
-        return [
+        $keys = [
             $this->getAttributeLabelKey(),
+        ];
+        if ($this->isUseModule()) {
             // Attributes in module
-            $this->generateTranslationKey([
+            array_push($keys, $this->generateTranslationKey([
                 $this->getVendor(),
                 $this->getModule(),
                 'attributes',
                 $this->getAttribute(),
                 static::TRANSLATION_KEY_LABEL,
-            ]),
-            // Attributes in vendor
-            $this->generateTranslationKey([
-                $this->getVendor(),
-                'attributes',
-                $this->getAttribute(),
-                static::TRANSLATION_KEY_LABEL,
-            ]),
-        ];
+            ]));
+        }
+        // Attributes in vendor
+        array_push($keys, $this->generateTranslationKey([
+            $this->getVendor(),
+            'attributes',
+            $this->getAttribute(),
+            static::TRANSLATION_KEY_LABEL,
+        ]));
+
+        return $keys;
     }
 
     /**
@@ -191,14 +228,19 @@ class AttributeComponents
      */
     public function getAttributeDescriptionKey(): string
     {
-        return $this->generateTranslationKey([
+        $parts = [
             $this->getVendor(),
-            $this->getModule(),
+        ];
+        if ($this->isUseModule()) {
+            array_push($parts, $this->getModule());
+        }
+        array_push($parts, ...[
             'subjects',
             $this->getSubject(),
             'attributes',
             $this->getAttribute(),
             static::TRANSLATION_KEY_DESCRIPTION,
         ]);
+        return $this->generateTranslationKey($parts);
     }
 }

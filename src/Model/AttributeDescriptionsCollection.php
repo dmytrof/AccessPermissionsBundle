@@ -69,4 +69,17 @@ class AttributeDescriptionsCollection extends ArrayCollection
         }
         return $this;
     }
+
+    /**
+     * Returns attributes descriptions as arrays
+     * @return array
+     */
+    public function getAsArray(): array
+    {
+        $data = [];
+        foreach ($this as $attribute => $description) {
+            $data[$attribute] = $description->toArray();
+        }
+        return $data;
+    }
 }

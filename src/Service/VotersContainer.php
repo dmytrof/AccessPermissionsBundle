@@ -35,18 +35,25 @@ class VotersContainer implements \IteratorAggregate
 	protected $translator;
 
     /**
+     * @var string
+     */
+	protected $translationDomain;
+
+    /**
      * @var AttributeDescriptionsCollection
      */
 	protected $attributeDescriptionsCollection;
 
     /**
      * VotersContainer constructor.
-     * @param TranslatorInterface $translator
      * @param iterable $voters
+     * @param TranslatorInterface $translator
+     * @param string|null $translationDomain
      */
-    public function __construct(TranslatorInterface $translator, iterable $voters)
+    public function __construct(iterable $voters, TranslatorInterface $translator, ?string $translationDomain = null)
     {
         $this->translator = $translator;
+        $this->translationDomain = $translationDomain;
         $this->voters = new ArrayCollection();
         foreach ($voters as $voter) {
             $this->addVoter($voter);
@@ -59,6 +66,15 @@ class VotersContainer implements \IteratorAggregate
     protected function getTranslator(): TranslatorInterface
     {
         return $this->translator;
+    }
+
+    /**
+     * Returns translation domain
+     * @return string|null
+     */
+    protected function getTranslationDomain(): ?string
+    {
+        return $this->translationDomain;
     }
 
     /**
@@ -127,8 +143,10 @@ class VotersContainer implements \IteratorAggregate
     public function getAttributeDescriptions(iterable $voters): AttributeDescriptionsCollection
     {
         $collection = new AttributeDescriptionsCollection();
-        foreach ($this->getVotersAttributes($voters) as $attribute) {
-            $collection->add(new AttributeDescription($attribute, $this->getTranslator()));
+        foreach ($voters as $voter) {
+            foreach ($voter->getAttributes() as $attribute) {
+                $collection->add(new AttributeDescription($attribute, ($voter instanceof ModuleVoterInterface), $this->getTranslator(), $this->getTranslationDomain()));
+            }
         }
         return $collection->sort();
     }

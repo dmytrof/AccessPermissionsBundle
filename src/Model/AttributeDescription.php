@@ -15,7 +15,10 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class AttributeDescription
 {
-    public const TRANSLATION_DOMAIN = 'module';
+    /**
+     * @var string
+     */
+    protected $translationDomain;
 
     /**
      * @var TranslatorInterface
@@ -35,13 +38,16 @@ class AttributeDescription
     /**
      * AttributeDescription constructor.
      * @param string $attribute
+     * @param bool $useModule
      * @param TranslatorInterface|null $translator
+     * @param string|null $translationDomain
      */
-    public function __construct(string $attribute, TranslatorInterface $translator = null)
+    public function __construct(string $attribute, bool $useModule = false, TranslatorInterface $translator = null, ?string $translationDomain = null)
     {
-        $this->translator = $translator;
         $this->attribute = $attribute;
-        $this->attributeComponents = new AttributeComponents($attribute);
+        $this->attributeComponents = new AttributeComponents($attribute, $useModule);
+        $this->translator = $translator;
+        $this->translationDomain = $translationDomain;
     }
 
     /**
@@ -66,13 +72,22 @@ class AttributeDescription
     }
 
     /**
+     * Checks if module is used
+     * @return bool
+     */
+    protected function isUseModule(): bool
+    {
+        return $this->getAttributeComponents()->isUseModule();
+    }
+
+    /**
      * Translates label key
      * @param string $labelKey
      * @return string
      */
     protected function translate(string $labelKey): string
     {
-        return $this->translator ? $this->translator->trans($labelKey, [], static::TRANSLATION_DOMAIN) : $labelKey;
+        return $this->translator ? $this->translator->trans($labelKey, [], $this->translationDomain) : $labelKey;
     }
 
     /**
@@ -112,7 +127,11 @@ class AttributeDescription
      */
     public function getLabel(): string
     {
-        return join(' > ', [/*$this->getVendor(), */$this->getModule(), $this->getSubject(), $this->getShortLabel()]);
+        $parts = [$this->getSubject(), $this->getShortLabel()];
+        if ($this->isUseModule()) {
+            array_unshift($parts, $this->getModule());
+        }
+        return join(' > ', $parts);
     }
 
     /**
@@ -156,5 +175,22 @@ class AttributeDescription
     public function __toString()
     {
         return $this->getAttribute();
+    }
+
+    /**
+     * Transforms attributeDescription to array
+     * @return array
+     */
+    public function toArray(): array
+    {
+        return [
+            'attribute' => $this->getAttribute(),
+            'shortLabel' => $this->getShortLabel(),
+            'label' => $this->getLabel(),
+            'description' => $this->getDescription(),
+            'vendor' => $this->getVendor(),
+            'module' => $this->isUseModule() ? $this->getModule() : null,
+            'subject' => $this->getSubject(),
+        ];
     }
 }

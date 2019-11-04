@@ -13,6 +13,7 @@ namespace Dmytrof\AccessPermissionsBundle\DependencyInjection;
 
 use Dmytrof\AccessPermissionsBundle\Security\AbstractVoter;
 use Symfony\Component\DependencyInjection\{ContainerBuilder, Loader};
+use Dmytrof\AccessPermissionsBundle\Service\VotersContainer;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
@@ -31,5 +32,8 @@ class DmytrofAccessPermissionsExtension extends Extension
 
         $container->registerForAutoconfiguration(AbstractVoter::class)
             ->addTag('dmytrof.access_permissions.voter');
+
+        $votersContainerDefinition = $container->getDefinition(VotersContainer::class);
+        $votersContainerDefinition->setArgument('$translationDomain', $config['translation_domain']);
     }
 }

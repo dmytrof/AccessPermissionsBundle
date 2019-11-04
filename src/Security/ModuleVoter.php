@@ -11,16 +11,11 @@
 
 namespace Dmytrof\AccessPermissionsBundle\Security;
 
+use Dmytrof\AccessPermissionsBundle\Security\Traits\ModuleVoterTrait;
+
 abstract class ModuleVoter extends AbstractVoter implements ModuleVoterInterface
 {
-    protected const MODULE = null;
+    use ModuleVoterTrait;
 
-    /**
-     * Returns module code
-     * @return string
-     */
-    public static function getModule(): string
-    {
-        return static::MODULE;
-    }
+    protected const MODULE = null;
 }

@@ -24,6 +24,13 @@ class Configuration implements ConfigurationInterface
     {
         $treeBuilder = new TreeBuilder('dmytrof_access_permissions');
 
+        $treeBuilder
+            ->getRootNode()
+                ->children()
+                    ->scalarNode('translation_domain')->defaultValue('attributes')->end()
+                ->end()
+            ->end()
+        ;
         return $treeBuilder;
     }
 }
