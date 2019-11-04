@@ -27,6 +27,11 @@
             "Dmytrof\\AccessPermissionsBundle\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Dmytrof\\AccessPermissionsBundle\\Tests\\": "tests/"
+        }
+    },
     "suggest": {
         "symfony/security": "Adds access permissions for administrator for entities and other resources"
     }
