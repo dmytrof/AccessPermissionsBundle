@@ -156,11 +156,11 @@ class AttributeDescription
 
     /**
      * Returns module
-     * @return string
+     * @return string|null
      */
-    public function getModule(): string
+    public function getModule(): ?string
     {
-        return $this->translate($this->getAttributeComponents()->getModuleLabelKey());
+        return $this->isUseModule() ? $this->translate($this->getAttributeComponents()->getModuleLabelKey()) : null;
     }
 
     /**

@@ -109,9 +109,9 @@ class AttributeComponents
 
     /**
      * Returns module
-     * @return string
+     * @return string|null
      */
-    public function getModule(): string
+    public function getModule(): ?string
     {
         return $this->module;
     }

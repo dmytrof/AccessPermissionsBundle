@@ -75,7 +75,7 @@ and install security component to your project.
              */
             public function getAdminAccessAttributes(): array
             {
-                // Return savet attributes from DB
+                // Return saved attributes from DB
                 return [
                     ArticleVoter::getViewAttribute(),
                     ArticleVoter::getCreateAttribute(),
