@@ -86,7 +86,7 @@ class RolesContainer implements \IteratorAggregate
      */
     public function removeRole(string $role): self
     {
-        $this->roles = array_diff($this->roles, [$role]);
+        $this->roles = array_diff($this->roles, func_get_args());
         return $this;
     }
 
