@@ -27,7 +27,7 @@ class Configuration implements ConfigurationInterface
         $treeBuilder
             ->getRootNode()
                 ->children()
-                    ->scalarNode('translation_domain')->defaultValue('attributes')->end()
+                    ->scalarNode('translation_domain')->defaultValue('access_attributes')->end()
                 ->end()
             ->end()
         ;
