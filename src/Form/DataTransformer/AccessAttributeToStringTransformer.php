@@ -82,7 +82,7 @@ class AccessAttributeToStringTransformer implements DataTransformerInterface
      */
     public function transform($value)
     {
-        if (is_subclass_of($value, $this->entityClass)) {
+        if ($value instanceof $this->entityClass) {
             return (string) $value;
         }
         return null;

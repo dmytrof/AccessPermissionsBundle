@@ -11,8 +11,8 @@
 
 namespace Dmytrof\AccessPermissionsBundle\Tests\Model;
 
-use Dmytrof\AccessPermissionsBundle\Model\AttributeDescription;
-use Dmytrof\AccessPermissionsBundle\Model\AttributeDescriptionsCollection;
+use Dmytrof\AccessPermissionsBundle\Exception\InvalidArgumentException;
+use Dmytrof\AccessPermissionsBundle\Model\{AttributeDescription, AttributeDescriptionsCollection};
 use PHPUnit\Framework\TestCase;
 
 class AttributeDescriptionsCollectionTest extends TestCase
@@ -34,9 +34,19 @@ class AttributeDescriptionsCollectionTest extends TestCase
     /**
      * @depends testCreate
      * @param AttributeDescriptionsCollection $collection
+     */
+    public function testGetAsArray(AttributeDescriptionsCollection $collection): void
+    {
+        $this->assertIsArray($collection->getAsArray());
+        $this->assertCount(2, $collection->getAsArray());
+    }
+
+    /**
+     * @depends testCreate
+     * @param AttributeDescriptionsCollection $collection
      * @return AttributeDescriptionsCollection
      */
-    public function testSetAdd(AttributeDescriptionsCollection $collection): AttributeDescriptionsCollection
+    public function testSetAdd(AttributeDescriptionsCollection $collection): void
     {
         $this->assertTrue($collection->add(new AttributeDescription('test.b.create')));
         $this->assertCount(3, $collection);
@@ -44,16 +54,7 @@ class AttributeDescriptionsCollectionTest extends TestCase
         $this->assertEmpty($collection->set('test', new AttributeDescription('test.b.delete')));
         $this->assertCount(4, $collection);
 
-        return $collection;
-    }
-
-    /**
-     * @depends testSetAdd
-     * @param AttributeDescriptionsCollection $collection
-     */
-    public function testGetAsArray(AttributeDescriptionsCollection $collection): void
-    {
-        $this->assertIsArray($collection->getAsArray());
-        $this->assertCount(4, $collection->getAsArray());
+        $this->expectException(InvalidArgumentException::class);
+        $collection->add('test.b.create');
     }
 }
