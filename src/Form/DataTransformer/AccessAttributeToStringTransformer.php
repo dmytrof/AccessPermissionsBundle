@@ -93,6 +93,9 @@ class AccessAttributeToStringTransformer implements DataTransformerInterface
      */
     public function reverseTransform($value)
     {
+        if ($value instanceof $this->entityClass) {
+            $value = (string) $value;
+        }
         if ($value) {
             if (!in_array($value, $this->getAttributes())) {
                 $failure = new TransformationFailedException(sprintf('Undefined access attribute %s', $value));
