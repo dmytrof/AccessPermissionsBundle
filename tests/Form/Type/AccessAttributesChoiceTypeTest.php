@@ -12,12 +12,13 @@
 namespace Dmytrof\AccessPermissionsBundle\Tests\Form\Type;
 
 use Dmytrof\AccessPermissionsBundle\Entity\AccessAttribute\{AccessAttribute, Repository};
-use Dmytrof\AccessPermissionsBundle\Form\{DataTransformer\AccessAttributeToStringTransformer, Type\AccessAttributeType};
+use Dmytrof\AccessPermissionsBundle\Form\{DataTransformer\AccessAttributeToStringTransformer, Type\AccessAttributesChoiceType};
 use Dmytrof\AccessPermissionsBundle\Service\VotersContainer;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 use Symfony\Component\Form\{PreloadedExtension, Test\TypeTestCase};
 
-class AccessAttributeTypeTest extends TypeTestCase
+class AccessAttributesChoiceTypeTest extends TypeTestCase
 {
     protected const ATTRIBUTE_FOO = 'test.attr.foo';
     protected const ATTRIBUTE_BAR = 'test.attr.bar';
@@ -35,7 +36,7 @@ class AccessAttributeTypeTest extends TypeTestCase
         $registry->method('getRepository')->willReturn($repo);
         $transformer = new AccessAttributeToStringTransformer($registry, $votersContainer);
         // create a type instance with the mocked dependencies
-        $type = new AccessAttributeType($transformer);
+        $type = new AccessAttributesChoiceType($transformer);
 
         return [
             // register the type instances with the PreloadedExtension
@@ -45,33 +46,36 @@ class AccessAttributeTypeTest extends TypeTestCase
 
     /**
      * @dataProvider getFormData
-     * @param string|null $formData
-     * @param AccessAttribute|null $modelData
+     * @param array|null $formData
+     * @param bool $synchronized
+     * @param $viewData
+     * @param $modelData
      */
-    public function testSubmitValidData(?string $formData, ?AccessAttribute $modelData)
+    public function testSubmitValidData(?array $formData, bool $synchronized, $viewData, $modelData)
     {
-        $form = $this->factory->create(AccessAttributeType::class);
+        $form = $this->factory->create(AccessAttributesChoiceType::class);
         $form->submit($formData);
 
-        $this->assertTrue($form->isSynchronized());
+        $this->assertSame($synchronized, $form->isSynchronized());
 
         $this->assertEquals($modelData, $form->getData());
 
         $view = $form->createView();
-        $this->assertEquals($formData, $view->vars['value']);
+        $this->assertEquals($viewData, $view->vars['value']);
     }
 
     public function testSubmitInvalidData(): void
     {
-        $form = $this->factory->create(AccessAttributeType::class);
+        $form = $this->factory->create(AccessAttributesChoiceType::class);
 
-        $form->submit('foo.bar.wrong');
+        $wrongData = ['foo.bar.wrong', 'bar.foo.wrong'];
+        $form->submit($wrongData);
 
         $this->assertFalse($form->isSynchronized());
 
         $this->assertNull($form->getData());
         $view = $form->createView();
-        $this->assertEquals('foo.bar.wrong', $view->vars['value']);
+        $this->assertEquals($wrongData, $view->vars['value']);
     }
 
     /**
@@ -80,9 +84,9 @@ class AccessAttributeTypeTest extends TypeTestCase
     public function getFormData(): array
     {
         return [
-            [self::ATTRIBUTE_FOO, new AccessAttribute(self::ATTRIBUTE_FOO)],
-            [self::ATTRIBUTE_BAR, new AccessAttribute(self::ATTRIBUTE_BAR)],
-            [null, null],
+            [[self::ATTRIBUTE_FOO, self::ATTRIBUTE_BAR], true, new ArrayCollection([self::ATTRIBUTE_FOO, self::ATTRIBUTE_BAR]), new ArrayCollection([new AccessAttribute(self::ATTRIBUTE_FOO), new AccessAttribute(self::ATTRIBUTE_BAR)])],
+            [[self::ATTRIBUTE_BAR, 'foo.bar'], false, [self::ATTRIBUTE_BAR, 'foo.bar'], null],
+            [null, true, new ArrayCollection(), new ArrayCollection()],
         ];
     }
 }
