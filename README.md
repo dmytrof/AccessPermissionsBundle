@@ -184,3 +184,52 @@ attribute ArticleVoter::EDIT)
 1. Voter tries to call **canRoleAuthorEdit** first. 
 2. If method not exists **canRoleAuthor**  will be called
 3. If method not exists **can** will be called
+
+#### 4. Add attributes labels and descriptions:
+
+Create **access_attributes.en.yaml** at translations folder
+        
+        // translations/access_attributes.en.yaml
+        
+        app:
+            label: My application
+            attributes:
+                create:
+                    label: Create
+                view:
+                    label: View
+                edit:
+                    label: Edit
+                delete:
+                    label: Delete
+            subjects:
+                article:
+                    label: Articles
+                    attributes:
+                        view:
+                            label: View articles
+                            description: Access to view article(s)
+                        create:
+                            label: Create new articles
+                        # edit - default label app.attributes.edit.label will be used
+                        # delete - default label app.attributes.delete.label will be used
+                author:
+                    label: Authors
+                    # attributes - default app.attributes will be used
+                
+
+#### 5. Manage user attributes:
+        
+Use form type **AccessAttributesChoiceType** or **AccessAttributesCollectionType** at your user form type 
+to manage access attributes for user.
+
+To get all access attributes with descriptions at your API add action to your UserController:
+
+        // src/Controller/UserController.php
+        
+        public function getAccessAttributes(VotersContainer $votersContainer)
+        {
+            return [
+                'attributes' => $votersContainer->getAttributeDescriptionsCollection()->sort()->getAsArray()
+            ];
+        }
