@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of the DmytrofFractalBundle package.
+ * This file is part of the DmytrofAccessPermissionsBundle package.
  *
  * (c) Dmytro Feshchenko <dmytro.feshchenko@gmail.com>
  *
