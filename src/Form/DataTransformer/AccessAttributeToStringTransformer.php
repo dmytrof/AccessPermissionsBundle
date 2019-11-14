@@ -83,7 +83,7 @@ class AccessAttributeToStringTransformer implements DataTransformerInterface
     public function transform($value)
     {
         if ($value instanceof $this->entityClass) {
-            return (string) $value;
+            return $value;
         }
         return null;
     }
