@@ -82,7 +82,7 @@ class VotersContainer implements \IteratorAggregate
      */
     public function getIterator()
     {
-        return new \ArrayIterator($this->voters->toArray());
+        return $this->voters->getIterator();
     }
 
     /**
