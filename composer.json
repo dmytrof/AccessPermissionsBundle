@@ -16,8 +16,7 @@
         "doctrine/orm": "^2.6",
         "symfony/security": "^4.3",
         "symfony/validator": "^4.3",
-        "symfony/form": "^4.3",
-        "symfony/doctrine-bridge": "^4.3"
+        "symfony/form": "^4.3"
     },
     "require-dev": {
         "phpunit/phpunit": "^8.3"

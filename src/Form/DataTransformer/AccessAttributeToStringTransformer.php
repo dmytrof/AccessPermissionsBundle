@@ -15,13 +15,13 @@ use Dmytrof\AccessPermissionsBundle\{Exception\InvalidArgumentException,
     Model\AccessAttribute as AccessAttributeModel,
     Entity\AccessAttribute\AccessAttribute,
     Service\VotersContainer};
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Symfony\Component\Form\{DataTransformerInterface, Exception\TransformationFailedException};
 
 class AccessAttributeToStringTransformer implements DataTransformerInterface
 {
     /**
-     * @var RegistryInterface
+     * @var ManagerRegistry
      */
     protected $registry;
 
@@ -37,10 +37,10 @@ class AccessAttributeToStringTransformer implements DataTransformerInterface
 
     /**
      * AccessAttributeToStringTransformer constructor.
-     * @param RegistryInterface $registry
+     * @param ManagerRegistry $registry
      * @param VotersContainer $votersContainer
      */
-    public function __construct(RegistryInterface $registry, VotersContainer $votersContainer)
+    public function __construct(ManagerRegistry $registry, VotersContainer $votersContainer)
     {
         $this->registry = $registry;
         $this->attributes = $votersContainer->getAllAttributes();
