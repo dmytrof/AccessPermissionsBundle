@@ -18,7 +18,7 @@ use Dmytrof\AccessPermissionsBundle\Form\DataTransformer\AccessAttributeToString
 use Dmytrof\AccessPermissionsBundle\Security\AbstractVoter;
 use Dmytrof\AccessPermissionsBundle\Service\{RolesContainer, VotersContainer};
 use PHPUnit\Framework\TestCase;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Symfony\Component\Form\Exception\TransformationFailedException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -32,7 +32,7 @@ class AccessAttributeToStringTransformerTest extends TestCase
         $rolesContainer = new RolesContainer(['ROLE_ADMIN' => []]);
         $repo = $this->createMock(Repository::class);
         $repo->method('findItemByAttribute')->willReturn(null);
-        $registry = $this->createMock(RegistryInterface::class);
+        $registry = $this->createMock(ManagerRegistry::class);
         $registry->method('getRepository')->willReturn($repo);
         $translator = $this->createMock(TranslatorInterface::class);
         $transformer = new AccessAttributeToStringTransformer($registry, new VotersContainer([new TestVoterA($rolesContainer), new TestVoterB($rolesContainer)], $translator));

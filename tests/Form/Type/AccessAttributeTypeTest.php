@@ -14,7 +14,7 @@ namespace Dmytrof\AccessPermissionsBundle\Tests\Form\Type;
 use Dmytrof\AccessPermissionsBundle\Entity\AccessAttribute\{AccessAttribute, Repository};
 use Dmytrof\AccessPermissionsBundle\Form\{DataTransformer\AccessAttributeToStringTransformer, Type\AccessAttributeType};
 use Dmytrof\AccessPermissionsBundle\Service\VotersContainer;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Symfony\Component\Form\{PreloadedExtension, Test\TypeTestCase};
 
 class AccessAttributeTypeTest extends TypeTestCase
@@ -31,7 +31,7 @@ class AccessAttributeTypeTest extends TypeTestCase
         ]);
         $repo = $this->createMock(Repository::class);
         $repo->method('findItemByAttribute')->willReturn(null);
-        $registry = $this->createMock(RegistryInterface::class);
+        $registry = $this->createMock(ManagerRegistry::class);
         $registry->method('getRepository')->willReturn($repo);
         $transformer = new AccessAttributeToStringTransformer($registry, $votersContainer);
         // create a type instance with the mocked dependencies
