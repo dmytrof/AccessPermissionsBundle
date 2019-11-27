@@ -2,7 +2,7 @@ DmytrofAccessPermissionsBundle
 ====================
 
 This bundle helps you to create access permissions for 
-your Symfony 4 application
+your Symfony 4/5 application
 
 ## Installation
 
