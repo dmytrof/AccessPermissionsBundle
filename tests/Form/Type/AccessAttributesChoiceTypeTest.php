@@ -56,7 +56,9 @@ class AccessAttributesChoiceTypeTest extends TypeTestCase
         $form = $this->factory->create(AccessAttributesChoiceType::class);
         $form->submit($formData);
 
-        $this->assertSame($synchronized, $form->isSynchronized());
+        if (!$synchronized) {
+            $this->assertCount(1, $form->getErrors());
+        }
 
         $this->assertEquals($modelData, $form->getData());
 
@@ -71,11 +73,10 @@ class AccessAttributesChoiceTypeTest extends TypeTestCase
         $wrongData = ['foo.bar.wrong', 'bar.foo.wrong'];
         $form->submit($wrongData);
 
-        $this->assertFalse($form->isSynchronized());
-
-        $this->assertNull($form->getData());
+        $this->assertCount(1, $form->getErrors());
+        $this->assertEquals(new ArrayCollection(), $form->getData());
         $view = $form->createView();
-        $this->assertEquals($wrongData, $view->vars['value']);
+        $this->assertEquals(new ArrayCollection(), $view->vars['value']);
     }
 
     /**
@@ -85,7 +86,8 @@ class AccessAttributesChoiceTypeTest extends TypeTestCase
     {
         return [
             [[self::ATTRIBUTE_FOO, self::ATTRIBUTE_BAR], true, new ArrayCollection([self::ATTRIBUTE_FOO, self::ATTRIBUTE_BAR]), new ArrayCollection([new AccessAttribute(self::ATTRIBUTE_FOO), new AccessAttribute(self::ATTRIBUTE_BAR)])],
-            [[self::ATTRIBUTE_BAR, 'foo.bar'], false, [self::ATTRIBUTE_BAR, 'foo.bar'], null],
+            [[self::ATTRIBUTE_BAR, 'foo.bar.test'], false, new ArrayCollection([self::ATTRIBUTE_BAR]), new ArrayCollection([new AccessAttribute(self::ATTRIBUTE_BAR)])],
+            [['foo.bar.bazzz', 'foo.bar.test'], false, new ArrayCollection(), new ArrayCollection()],
             [null, true, new ArrayCollection(), new ArrayCollection()],
         ];
     }
