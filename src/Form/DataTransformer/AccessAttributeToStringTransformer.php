@@ -15,7 +15,7 @@ use Dmytrof\AccessPermissionsBundle\{Exception\InvalidArgumentException,
     Model\AccessAttribute as AccessAttributeModel,
     Entity\AccessAttribute\AccessAttribute,
     Service\VotersContainer};
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Form\{DataTransformerInterface, Exception\TransformationFailedException};
 
 class AccessAttributeToStringTransformer implements DataTransformerInterface

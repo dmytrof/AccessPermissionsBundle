@@ -14,7 +14,7 @@ namespace Dmytrof\AccessPermissionsBundle\Tests\Form\Type;
 use Dmytrof\AccessPermissionsBundle\Entity\AccessAttribute\{AccessAttribute, Repository};
 use Dmytrof\AccessPermissionsBundle\Form\{DataTransformer\AccessAttributeToStringTransformer, Type\AccessAttributeType};
 use Dmytrof\AccessPermissionsBundle\Service\VotersContainer;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Form\{PreloadedExtension, Test\TypeTestCase};
 
 class AccessAttributeTypeTest extends TypeTestCase

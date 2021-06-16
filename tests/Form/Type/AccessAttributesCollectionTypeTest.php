@@ -16,7 +16,7 @@ use Dmytrof\AccessPermissionsBundle\Form\{DataTransformer\AccessAttributeToStrin
     Type\AccessAttributesCollectionType,
     Type\AccessAttributeType};
 use Dmytrof\AccessPermissionsBundle\Service\VotersContainer;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Form\{PreloadedExtension, Test\TypeTestCase};
 
 class AccessAttributesCollectionTypeTest extends TypeTestCase

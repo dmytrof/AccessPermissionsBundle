@@ -18,7 +18,7 @@ use Dmytrof\AccessPermissionsBundle\Form\DataTransformer\AccessAttributeToString
 use Dmytrof\AccessPermissionsBundle\Security\AbstractVoter;
 use Dmytrof\AccessPermissionsBundle\Service\{RolesContainer, VotersContainer};
 use PHPUnit\Framework\TestCase;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Form\Exception\TransformationFailedException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 

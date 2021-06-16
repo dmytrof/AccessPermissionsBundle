@@ -15,7 +15,7 @@ use Dmytrof\AccessPermissionsBundle\Entity\AccessAttribute\{AccessAttribute, Rep
 use Dmytrof\AccessPermissionsBundle\Form\{DataTransformer\AccessAttributeToStringTransformer, Type\AccessAttributesChoiceType};
 use Dmytrof\AccessPermissionsBundle\Service\VotersContainer;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Form\{PreloadedExtension, Test\TypeTestCase};
 
 class AccessAttributesChoiceTypeTest extends TypeTestCase

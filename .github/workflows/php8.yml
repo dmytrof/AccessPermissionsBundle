@@ -1,4 +1,4 @@
-name: PHP7.2 Composer
+name: PHP8 Composer
 
 on: [push]
 
@@ -9,11 +9,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-
+      
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '7.2'
+        php-version: '8.0'
 
     - name: Validate composer.json and composer.lock
       run: composer validate
