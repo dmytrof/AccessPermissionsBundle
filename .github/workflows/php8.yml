@@ -1,4 +1,4 @@
-name: PHP8 Composer
+name: PHP8 Composer v2
 
 on: [push]
 
