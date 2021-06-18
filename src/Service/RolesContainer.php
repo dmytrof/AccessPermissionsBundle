@@ -11,9 +11,8 @@
 
 namespace Dmytrof\AccessPermissionsBundle\Service;
 
-use Doctrine\Inflector\Inflector;
+use Doctrine\Inflector\{Inflector, NoopWordInflector};
 use Dmytrof\AccessPermissionsBundle\Exception\RoleException;
-use Doctrine\Inflector\InflectorFactory;
 
 class RolesContainer implements \IteratorAggregate
 {
@@ -98,7 +97,7 @@ class RolesContainer implements \IteratorAggregate
      */
     public function classifyRole(string $role): string
     {
-        return InflectorFactory::create()->build()->classify(strtolower($role));
+        return (new Inflector(new NoopWordInflector(), new NoopWordInflector()))->classify(strtolower($role));
     }
 
     /**
@@ -108,6 +107,6 @@ class RolesContainer implements \IteratorAggregate
      */
     public function declassifyRole(string $classifiedRole): string
     {
-        return strtoupper(InflectorFactory::create()->build()->tableize($classifiedRole));
+        return strtoupper((new Inflector(new NoopWordInflector(), new NoopWordInflector()))->tableize($classifiedRole));
     }
 }
