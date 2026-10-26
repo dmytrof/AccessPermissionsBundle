@@ -48,7 +48,7 @@ class AttributeDescriptionsCollectionTest extends TestCase
      */
     public function testSetAdd(AttributeDescriptionsCollection $collection): void
     {
-        $this->assertTrue($collection->add(new AttributeDescription('test.b.create')));
+        $collection->add(new AttributeDescription('test.b.create'));
         $this->assertCount(3, $collection);
 
         $this->assertEmpty($collection->set('test', new AttributeDescription('test.b.delete')));

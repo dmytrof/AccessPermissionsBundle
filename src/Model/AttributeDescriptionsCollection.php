@@ -39,14 +39,12 @@ class AttributeDescriptionsCollection extends ArrayCollection
     /**
      * {@inheritDoc}
      */
-    public function add(mixed $element): bool
+    public function add(mixed $element): void
     {
         if (!$element instanceof AttributeDescription) {
             throw new InvalidArgumentException(sprintf('Element must be %s. Got: %s', AttributeDescription::class, gettype($element)));
         }
         parent::set($element->getAttribute(), $element);
-
-        return true;
     }
 
     /**
