@@ -42,7 +42,7 @@ class AttributeDescription
      * @param TranslatorInterface|null $translator
      * @param string|null $translationDomain
      */
-    public function __construct(string $attribute, bool $useModule = false, TranslatorInterface $translator = null, ?string $translationDomain = null)
+    public function __construct(string $attribute, bool $useModule = false, ?TranslatorInterface $translator = null, ?string $translationDomain = null)
     {
         $this->attribute = $attribute;
         $this->attributeComponents = new AttributeComponents($attribute, $useModule);

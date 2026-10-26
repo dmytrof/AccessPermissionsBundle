@@ -11,7 +11,9 @@
 
 namespace Dmytrof\AccessPermissionsBundle\Security;
 
-use Symfony\Component\Security\Core\{Authentication\Token\TokenInterface, Authorization\Voter\Voter};
+use Symfony\Component\Security\Core\{Authentication\Token\TokenInterface,
+    Authorization\Voter\Vote,
+    Authorization\Voter\Voter};
 use Dmytrof\AccessPermissionsBundle\{Exception\BadMethodCallException,
     Exception\RuntimeException,
     Exception\VoterException,
@@ -164,7 +166,7 @@ abstract class AbstractVoter extends Voter
     /**
      * {@inheritdoc}
      */
-    protected function voteOnAttribute($attribute, $subject, TokenInterface $token): bool
+    protected function voteOnAttribute($attribute, $subject, TokenInterface $token, ?Vote $vote = null): bool
     {
         foreach ($token->getRoleNames() as $role) {
             $method = 'can'.$this->getRolesContainer()->classifyRole($role).ucfirst($this->getShortAttribute($attribute));

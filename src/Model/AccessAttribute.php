@@ -33,7 +33,7 @@ class AccessAttribute
      * AccessAttribute constructor.
      * @param string|null $attribute
      */
-    public function __construct(string $attribute = null)
+    public function __construct(?string $attribute = null)
     {
         $this->setAttribute($attribute);
     }

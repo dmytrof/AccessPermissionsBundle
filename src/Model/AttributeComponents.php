@@ -50,7 +50,7 @@ class AttributeComponents
      * @param string $attribute
      * @param bool $useModule
      */
-    public function __construct(string $attribute, bool $useModule = false)
+    public function __construct(string $attribute, ?bool $useModule = false)
     {
         $this->useModule = $useModule;
 
