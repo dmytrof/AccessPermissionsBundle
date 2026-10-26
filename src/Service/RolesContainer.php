@@ -13,6 +13,7 @@ namespace Dmytrof\AccessPermissionsBundle\Service;
 
 use Doctrine\Inflector\{Inflector, NoopWordInflector};
 use Dmytrof\AccessPermissionsBundle\Exception\RoleException;
+use Traversable;
 
 class RolesContainer implements \IteratorAggregate
 {
@@ -37,7 +38,7 @@ class RolesContainer implements \IteratorAggregate
     /**
      * {@inheritdoc}
      */
-    public function getIterator()
+    public function getIterator(): Traversable
     {
         return new \ArrayIterator($this->roles);
     }

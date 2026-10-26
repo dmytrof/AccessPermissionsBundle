@@ -1,4 +1,4 @@
-name: PHP7.2 Composer v1
+name: PHP8.3 Composer v2
 
 on: [push]
 
@@ -9,12 +9,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-
+      
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '7.2'
-        tools: composer:v1, phpunit:v8.5, composer-require-checker, php-config
+        php-version: '8.3'
 
     - name: PHP version
       run: php --version

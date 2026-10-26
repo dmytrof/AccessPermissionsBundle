@@ -19,7 +19,7 @@ class AccessAttributesCollectionType extends AbstractType
     /**
      * @inheritDoc
      */
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'allow_add' => true,
@@ -33,7 +33,7 @@ class AccessAttributesCollectionType extends AbstractType
     /**
      * @inheritDoc
      */
-    public function getParent()
+    public function getParent(): string
     {
         return CollectionType::class;
     }

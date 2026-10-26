@@ -21,6 +21,7 @@ use Dmytrof\AccessPermissionsBundle\{Exception\VoterException,
     Security\AbstractVoter,
     Security\ModuleVoterInterface};
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Traversable;
 
 class VotersContainer implements \IteratorAggregate
 {
@@ -80,7 +81,7 @@ class VotersContainer implements \IteratorAggregate
     /**
      * {@inheritdoc}
      */
-    public function getIterator()
+    public function getIterator(): Traversable
     {
         return $this->voters->getIterator();
     }

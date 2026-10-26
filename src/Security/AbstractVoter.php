@@ -141,7 +141,7 @@ abstract class AbstractVoter extends Voter
     /**
      * {@inheritdoc}
      */
-    protected function supports($attribute, $subject = null)
+    protected function supports($attribute, $subject = null): bool
     {
         // if the attribute isn't one we support, return false
         if (!$this->checkAttribute($attribute)) {
@@ -164,7 +164,7 @@ abstract class AbstractVoter extends Voter
     /**
      * {@inheritdoc}
      */
-    protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
+    protected function voteOnAttribute($attribute, $subject, TokenInterface $token): bool
     {
         foreach ($token->getRoleNames() as $role) {
             $method = 'can'.$this->getRolesContainer()->classifyRole($role).ucfirst($this->getShortAttribute($attribute));

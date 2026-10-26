@@ -80,7 +80,7 @@ class AccessAttributeToStringTransformer implements DataTransformerInterface
     /**
      * @inheritDoc
      */
-    public function transform($value)
+    public function transform($value): mixed
     {
         if ($value instanceof $this->entityClass) {
             return $value;
@@ -91,7 +91,7 @@ class AccessAttributeToStringTransformer implements DataTransformerInterface
     /**
      * @inheritDoc
      */
-    public function reverseTransform($value)
+    public function reverseTransform($value): mixed
     {
         if ($value instanceof $this->entityClass) {
             $value = (string) $value;

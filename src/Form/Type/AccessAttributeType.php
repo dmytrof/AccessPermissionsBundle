@@ -35,7 +35,7 @@ class AccessAttributeType extends AbstractType
     /**
      * @inheritDoc
      */
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => AccessAttribute::class,
@@ -46,7 +46,7 @@ class AccessAttributeType extends AbstractType
     /**
      * @inheritDoc
      */
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->addViewTransformer($this->transformer->setEntityClass($options['data_class']));
     }
@@ -54,7 +54,7 @@ class AccessAttributeType extends AbstractType
     /**
      * @inheritDoc
      */
-    public function getParent()
+    public function getParent(): string
     {
         return TextType::class;
     }
