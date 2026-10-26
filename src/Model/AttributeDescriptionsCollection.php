@@ -31,7 +31,7 @@ class AttributeDescriptionsCollection extends ArrayCollection
     /**
      * {@inheritDoc}
      */
-    public function set($key, $value)
+    public function set(string|int $key, mixed $value): void
     {
         $this->add($value);
     }
@@ -39,7 +39,7 @@ class AttributeDescriptionsCollection extends ArrayCollection
     /**
      * {@inheritDoc}
      */
-    public function add($element)
+    public function add($element): bool
     {
         if (!$element instanceof AttributeDescription) {
             throw new InvalidArgumentException(sprintf('Element must be %s. Got: %s', AttributeDescription::class, gettype($element)));
