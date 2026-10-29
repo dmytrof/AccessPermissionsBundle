@@ -9,10 +9,15 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Dmytrof\AccessPermissionsBundle\Model;
 
 use Dmytrof\AccessPermissionsBundle\Exception\InvalidArgumentException;
 
+/**
+ * Parts of attribute "vendor[.module].subject.attribute" and their translation keys
+ */
 class AttributeComponents
 {
     public const ATTRIBUTE_DELIMITER = '.';
@@ -20,43 +25,22 @@ class AttributeComponents
     public const TRANSLATION_KEY_LABEL = 'label';
     public const TRANSLATION_KEY_DESCRIPTION = 'description';
 
-    /**
-     * @var string
-     */
-    protected $vendor;
+    protected string $vendor;
+    protected bool $useModule;
+    protected ?string $module = null;
+    protected string $subject;
+    protected string $attribute;
 
     /**
-     * @var bool
-     */
-    protected $useModule;
-
-    /**
-     * @var string
-     */
-    protected $module;
-
-    /**
-     * @var string
-     */
-    protected $subject;
-
-    /**
-     * @var string
-     */
-    protected $attribute;
-
-    /**
-     * AttributeComponents constructor.
-     * @param string $attribute
-     * @param bool $useModule
+     * @throws InvalidArgumentException when attribute has wrong number of parts
      */
     public function __construct(string $attribute, ?bool $useModule = false)
     {
-        $this->useModule = $useModule;
+        $this->useModule = (bool) $useModule;
 
         $parts = explode(static::ATTRIBUTE_DELIMITER, $attribute);
         $neededPartsCount = $this->isUseModule() ? 4 : 3;
-        if (sizeof($parts) != $neededPartsCount) {
+        if (count($parts) !== $neededPartsCount) {
             throw new InvalidArgumentException(sprintf('Attribute must consist of %s parts delimited with ".". Input was: %s', $neededPartsCount, $attribute));
         }
         $this->vendor = array_shift($parts);
@@ -69,7 +53,6 @@ class AttributeComponents
 
     /**
      * Checks if module is used in attribute
-     * @return bool
      */
     public function isUseModule(): bool
     {
@@ -78,27 +61,29 @@ class AttributeComponents
 
     /**
      * Generates translation key
-     * @param array $parts
-     * @return string
+     *
+     * @param list<string> $parts
      */
     protected function generateTranslationKey(array $parts): string
     {
-        return join(static::ATTRIBUTE_LABEL_DELIMITER, $parts);
+        return implode(static::ATTRIBUTE_LABEL_DELIMITER, $parts);
     }
 
     /**
-     * Returns vendor
-     * @return string
+     * Returns translation key parts of vendor and module (if used)
+     *
+     * @return list<string>
      */
+    protected function getVendorAndModuleParts(): array
+    {
+        return $this->isUseModule() ? [$this->getVendor(), $this->getModule()] : [$this->getVendor()];
+    }
+
     public function getVendor(): string
     {
         return $this->vendor;
     }
 
-    /**
-     * Returns vendor label key
-     * @return string
-     */
     public function getVendorLabelKey(): string
     {
         return $this->generateTranslationKey([
@@ -107,94 +92,55 @@ class AttributeComponents
         ]);
     }
 
-    /**
-     * Returns module
-     * @return string|null
-     */
     public function getModule(): ?string
     {
         return $this->module;
     }
 
-    /**
-     * Returns module label key
-     * @return string
-     */
     public function getModuleLabelKey(): string
     {
-        $parts = [
-            $this->getVendor(),
-        ];
-        if ($this->isUseModule()) {
-            array_push($parts, $this->getModule());
-        }
-        array_push($parts, static::TRANSLATION_KEY_LABEL);
-        return $this->generateTranslationKey($parts);
+        return $this->generateTranslationKey([
+            ...$this->getVendorAndModuleParts(),
+            static::TRANSLATION_KEY_LABEL,
+        ]);
     }
 
-    /**
-     * Returns subject
-     * @return string
-     */
     public function getSubject(): string
     {
         return $this->subject;
     }
 
-    /**
-     * Returns subject label key
-     * @return string
-     */
     public function getSubjectLabelKey(): string
     {
-        $parts = [
-            $this->getVendor(),
-        ];
-        if ($this->isUseModule()) {
-            array_push($parts, $this->getModule());
-        }
-        array_push($parts, ...[
+        return $this->generateTranslationKey([
+            ...$this->getVendorAndModuleParts(),
             'subjects',
             $this->getSubject(),
             static::TRANSLATION_KEY_LABEL,
         ]);
-        return $this->generateTranslationKey($parts);
     }
 
-    /**
-     * Returns attribute
-     * @return string
-     */
     public function getAttribute(): string
     {
         return $this->attribute;
     }
 
-    /**
-     * Returns attribute label key
-     * @return string
-     */
     public function getAttributeLabelKey(): string
     {
-        $parts = [
-            $this->getVendor(),
-        ];
-        if ($this->isUseModule()) {
-            array_push($parts, $this->getModule());
-        }
-        array_push($parts, ...[
+        return $this->generateTranslationKey([
+            ...$this->getVendorAndModuleParts(),
             'subjects',
             $this->getSubject(),
             'attributes',
             $this->getAttribute(),
             static::TRANSLATION_KEY_LABEL,
         ]);
-        return $this->generateTranslationKey($parts);
     }
 
     /**
-     * Returns attribute possible label keys
-     * @return array
+     * Returns attribute possible label keys: of the subject, of the module (if used), of the vendor
+     *
+     * @return list<string>
      */
     public function getAttributeLabelKeys(): array
     {
@@ -203,44 +149,34 @@ class AttributeComponents
         ];
         if ($this->isUseModule()) {
             // Attributes in module
-            array_push($keys, $this->generateTranslationKey([
+            $keys[] = $this->generateTranslationKey([
                 $this->getVendor(),
                 $this->getModule(),
                 'attributes',
                 $this->getAttribute(),
                 static::TRANSLATION_KEY_LABEL,
-            ]));
+            ]);
         }
         // Attributes in vendor
-        array_push($keys, $this->generateTranslationKey([
+        $keys[] = $this->generateTranslationKey([
             $this->getVendor(),
             'attributes',
             $this->getAttribute(),
             static::TRANSLATION_KEY_LABEL,
-        ]));
+        ]);
 
         return $keys;
     }
 
-    /**
-     * Returns attribute description key
-     * @return string
-     */
     public function getAttributeDescriptionKey(): string
     {
-        $parts = [
-            $this->getVendor(),
-        ];
-        if ($this->isUseModule()) {
-            array_push($parts, $this->getModule());
-        }
-        array_push($parts, ...[
+        return $this->generateTranslationKey([
+            ...$this->getVendorAndModuleParts(),
             'subjects',
             $this->getSubject(),
             'attributes',
             $this->getAttribute(),
             static::TRANSLATION_KEY_DESCRIPTION,
         ]);
-        return $this->generateTranslationKey($parts);
     }
 }

@@ -9,6 +9,8 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Dmytrof\AccessPermissionsBundle\Tests\Security;
 
 use Dmytrof\AccessPermissionsBundle\{Security\AbstractVoter,
@@ -19,7 +21,7 @@ use PHPUnit\Framework\TestCase;
 
 class CRUDVoterTest extends TestCase
 {
-    public function testVoter()
+    public function testVoter(): void
     {
         $voter = new TestCRUDVoter(new RolesContainer(['ROLE_ADMIN' => []]));
 
@@ -38,4 +40,4 @@ class TestCRUDVoter extends AbstractVoter implements CRUDVoterInterface
     public const CREATE = 'create';
     public const EDIT = 'edit';
     public const DELETE = 'delete';
-}
+}

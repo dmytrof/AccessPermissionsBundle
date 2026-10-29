@@ -9,10 +9,13 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Dmytrof\AccessPermissionsBundle\Tests\Model;
 
 use Dmytrof\AccessPermissionsBundle\Exception\InvalidArgumentException;
 use Dmytrof\AccessPermissionsBundle\Model\{AttributeDescription, AttributeDescriptionsCollection};
+use PHPUnit\Framework\Attributes\Depends;
 use PHPUnit\Framework\TestCase;
 
 class AttributeDescriptionsCollectionTest extends TestCase
@@ -31,21 +34,14 @@ class AttributeDescriptionsCollectionTest extends TestCase
         return $collection;
     }
 
-    /**
-     * @depends testCreate
-     * @param AttributeDescriptionsCollection $collection
-     */
+    #[Depends('testCreate')]
     public function testGetAsArray(AttributeDescriptionsCollection $collection): void
     {
         $this->assertIsArray($collection->getAsArray());
         $this->assertCount(2, $collection->getAsArray());
     }
 
-    /**
-     * @depends testCreate
-     * @param AttributeDescriptionsCollection $collection
-     * @return AttributeDescriptionsCollection
-     */
+    #[Depends('testCreate')]
     public function testSetAdd(AttributeDescriptionsCollection $collection): void
     {
         $collection->add(new AttributeDescription('test.b.create'));
@@ -57,4 +53,4 @@ class AttributeDescriptionsCollectionTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $collection->add('test.b.create');
     }
-}
+}

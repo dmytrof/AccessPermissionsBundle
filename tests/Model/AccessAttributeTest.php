@@ -9,6 +9,8 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Dmytrof\AccessPermissionsBundle\Tests\Model;
 
 use Dmytrof\AccessPermissionsBundle\Model\AccessAttribute;
@@ -16,7 +18,7 @@ use PHPUnit\Framework\TestCase;
 
 class AccessAttributeTest extends TestCase
 {
-    public function testAccessAttribute()
+    public function testAccessAttribute(): void
     {
         $attribute = 'dmytrof.test.attribute';
         $accessAttribute = new AccessAttribute();
@@ -28,4 +30,4 @@ class AccessAttributeTest extends TestCase
 
         $this->assertSame($attribute, (new AccessAttribute($attribute))->getAttribute());
     }
-}
+}

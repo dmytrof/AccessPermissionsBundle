@@ -9,6 +9,8 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Dmytrof\AccessPermissionsBundle\Tests\Form\Type;
 
 use Dmytrof\AccessPermissionsBundle\Entity\AccessAttribute\{AccessAttribute, Repository};
@@ -17,8 +19,11 @@ use Dmytrof\AccessPermissionsBundle\Form\{DataTransformer\AccessAttributeToStrin
     Type\AccessAttributeType};
 use Dmytrof\AccessPermissionsBundle\Service\VotersContainer;
 use Doctrine\Persistence\ManagerRegistry;
+use PHPUnit\Framework\Attributes\{AllowMockObjectsWithoutExpectations, DataProvider};
 use Symfony\Component\Form\{PreloadedExtension, Test\TypeTestCase};
 
+// TypeTestCase mocks the event dispatcher without expectations (PHPUnit 12+ notice)
+#[AllowMockObjectsWithoutExpectations]
 class AccessAttributesCollectionTypeTest extends TypeTestCase
 {
     protected const ATTRIBUTE_FOO = 'test.attr.foo';
@@ -26,14 +31,14 @@ class AccessAttributesCollectionTypeTest extends TypeTestCase
 
     protected function getExtensions(): array
     {
-        $votersContainer = $this->createMock(VotersContainer::class);
+        $votersContainer = $this->createStub(VotersContainer::class);
         $votersContainer->method('getAllAttributes')->willReturn([
             self::ATTRIBUTE_FOO,
             self::ATTRIBUTE_BAR,
         ]);
-        $repo = $this->createMock(Repository::class);
+        $repo = $this->createStub(Repository::class);
         $repo->method('findItemByAttribute')->willReturn(null);
-        $registry = $this->createMock(ManagerRegistry::class);
+        $registry = $this->createStub(ManagerRegistry::class);
         $registry->method('getRepository')->willReturn($repo);
         $transformer = new AccessAttributeToStringTransformer($registry, $votersContainer);
         // create a type instance with the mocked dependencies
@@ -45,13 +50,8 @@ class AccessAttributesCollectionTypeTest extends TypeTestCase
         ];
     }
 
-    /**
-     * @dataProvider getFormData
-     * @param array|null $formData
-     * @param array $viewData
-     * @param array $modelData
-     */
-    public function testSubmitValidData(?array $formData, array $viewData, array $modelData)
+    #[DataProvider('getFormData')]
+    public function testSubmitValidData(?array $formData, array $viewData, array $modelData): void
     {
         $form = $this->factory->create(AccessAttributesCollectionType::class);
         $form->submit($formData);
@@ -80,7 +80,7 @@ class AccessAttributesCollectionTypeTest extends TypeTestCase
     /**
      * @return array
      */
-    public function getFormData(): array
+    public static function getFormData(): array
     {
         return [
             [[self::ATTRIBUTE_FOO, self::ATTRIBUTE_BAR], [self::ATTRIBUTE_FOO, self::ATTRIBUTE_BAR], [new AccessAttribute(self::ATTRIBUTE_FOO), new AccessAttribute(self::ATTRIBUTE_BAR)]],
@@ -88,4 +88,4 @@ class AccessAttributesCollectionTypeTest extends TypeTestCase
             [null, [], []],
         ];
     }
-}
+}

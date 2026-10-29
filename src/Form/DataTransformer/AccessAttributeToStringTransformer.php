@@ -9,45 +9,40 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Dmytrof\AccessPermissionsBundle\Form\DataTransformer;
 
-use Dmytrof\AccessPermissionsBundle\{Exception\InvalidArgumentException,
-    Model\AccessAttribute as AccessAttributeModel,
-    Entity\AccessAttribute\AccessAttribute,
-    Service\VotersContainer};
+use Dmytrof\AccessPermissionsBundle\{Entity\AccessAttribute\AccessAttribute, Exception\InvalidArgumentException, Model\AccessAttribute as AccessAttributeModel, Service\VotersContainer};
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Form\{DataTransformerInterface, Exception\TransformationFailedException};
 
+/**
+ * Transforms access attribute entity to attribute string and back (finds existing entity or creates a new one)
+ *
+ * @implements DataTransformerInterface<AccessAttributeModel, AccessAttributeModel|string>
+ */
 class AccessAttributeToStringTransformer implements DataTransformerInterface
 {
     /**
-     * @var ManagerRegistry
+     * @var array<string, string>
      */
-    protected $registry;
+    protected array $attributes;
 
     /**
-     * @var array
+     * @var class-string<AccessAttributeModel>
      */
-    protected $attributes;
+    protected string $entityClass = AccessAttribute::class;
 
-    /**
-     * @var string
-     */
-    protected $entityClass = AccessAttribute::class;
-
-    /**
-     * AccessAttributeToStringTransformer constructor.
-     * @param ManagerRegistry $registry
-     * @param VotersContainer $votersContainer
-     */
-    public function __construct(ManagerRegistry $registry, VotersContainer $votersContainer)
-    {
-        $this->registry = $registry;
+    public function __construct(
+        protected ManagerRegistry $registry,
+        VotersContainer $votersContainer,
+    ) {
         $this->attributes = $votersContainer->getAllAttributes();
     }
 
     /**
-     * @return string
+     * @return class-string<AccessAttributeModel>
      */
     public function getEntityClass(): string
     {
@@ -55,62 +50,57 @@ class AccessAttributeToStringTransformer implements DataTransformerInterface
     }
 
     /**
-     * Sets class
-     * @param string $entityClass
-     * @return AccessAttributeToStringTransformer
+     * Sets entity class
+     *
+     * @throws InvalidArgumentException when the class does not extend AccessAttribute model
      */
-    public function setEntityClass(string $entityClass): self
+    public function setEntityClass(string $entityClass): static
     {
-        if (!is_subclass_of($entityClass, AccessAttributeModel::class)) {
+        if (!is_a($entityClass, AccessAttributeModel::class, true)) {
             throw new InvalidArgumentException(sprintf('Entity %s is not instance of %s', $entityClass, AccessAttributeModel::class));
         }
         $this->entityClass = $entityClass;
+
         return $this;
     }
 
     /**
-     * Returns attributes
-     * @return array
+     * Returns all access attributes
+     *
+     * @return array<string, string>
      */
     public function getAttributes(): array
     {
         return $this->attributes;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function transform($value): mixed
+    public function transform(mixed $value): mixed
     {
-        if ($value instanceof $this->entityClass) {
-            return $value;
-        }
-        return null;
+        return $value instanceof $this->entityClass ? $value : null;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function reverseTransform($value): mixed
+    public function reverseTransform(mixed $value): mixed
     {
         if ($value instanceof $this->entityClass) {
             $value = (string) $value;
         }
-        if ($value) {
-            if (!in_array($value, $this->getAttributes())) {
-                $failure = new TransformationFailedException(sprintf('Undefined access attribute %s', $value));
-                $failure->setInvalidMessage('The given "{{ value }}" value is not a valid access attribute.', [
-                    '{{ value }}' => $value,
-                ]);
-                throw $failure;
-            }
-            $entity = $this->registry->getRepository($this->entityClass)->findItemByAttribute($value);
-            if (!$entity) {
-                $class = $this->entityClass;
-                $entity = new $class($value);
-            }
-            return $entity;
+        if (null === $value || '' === $value) {
+            return null;
         }
-        return null;
+        if (!is_string($value) || !in_array($value, $this->getAttributes(), true)) {
+            $value = is_scalar($value) ? (string) $value : get_debug_type($value);
+            $failure = new TransformationFailedException(sprintf('Undefined access attribute %s', $value));
+            $failure->setInvalidMessage('The given "{{ value }}" value is not a valid access attribute.', [
+                '{{ value }}' => $value,
+            ]);
+            throw $failure;
+        }
+
+        $repository = $this->registry->getRepository($this->entityClass);
+        $entity = method_exists($repository, 'findItemByAttribute')
+            ? $repository->findItemByAttribute($value)
+            : $repository->findOneBy(['attribute' => $value]);
+
+        return $entity ?? new ($this->entityClass)($value);
     }
 }

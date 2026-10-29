@@ -9,32 +9,25 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Dmytrof\AccessPermissionsBundle\Form\Type;
 
 use Dmytrof\AccessPermissionsBundle\Entity\AccessAttribute\AccessAttribute;
 use Dmytrof\AccessPermissionsBundle\Form\DataTransformer\AccessAttributeToStringTransformer;
-use Symfony\Component\Form\{AbstractType, FormBuilderInterface, Extension\Core\Type\TextType};
+use Symfony\Component\Form\{AbstractType, Extension\Core\Type\TextType, FormBuilderInterface};
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+/**
+ * Access attribute entity as text field with the attribute
+ */
 class AccessAttributeType extends AbstractType
 {
-    /**
-     * @var AccessAttributeToStringTransformer
-     */
-    protected $transformer;
-
-    /**
-     * AccessAttributeType constructor.
-     * @param AccessAttributeToStringTransformer $transformer
-     */
-    public function __construct(AccessAttributeToStringTransformer $transformer)
-    {
-        $this->transformer = $transformer;
+    public function __construct(
+        protected AccessAttributeToStringTransformer $transformer,
+    ) {
     }
 
-    /**
-     * @inheritDoc
-     */
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
@@ -43,17 +36,12 @@ class AccessAttributeType extends AbstractType
         ]);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder->addViewTransformer($this->transformer->setEntityClass($options['data_class']));
+        // The transformer service is shared: each form gets a copy with its own entity class
+        $builder->addViewTransformer((clone $this->transformer)->setEntityClass($options['data_class']));
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getParent(): string
     {
         return TextType::class;

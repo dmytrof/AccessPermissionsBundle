@@ -9,9 +9,13 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Dmytrof\AccessPermissionsBundle\Tests\Service;
 
+use Dmytrof\AccessPermissionsBundle\Exception\RoleException;
 use Dmytrof\AccessPermissionsBundle\Service\RolesContainer;
+use PHPUnit\Framework\Attributes\Depends;
 use PHPUnit\Framework\TestCase;
 
 class RolesContainerTest extends TestCase
@@ -32,11 +36,7 @@ class RolesContainerTest extends TestCase
         return $container;
     }
 
-    /**
-     * @depends testCreateRolesContainer
-     * @param RolesContainer $container
-     * @return RolesContainer
-     */
+    #[Depends('testCreateRolesContainer')]
     public function testAddAndRemoveRoles(RolesContainer $container): RolesContainer
     {
         $this->assertInstanceOf(RolesContainer::class, $container->addRole('ROLE_TEST', 'ROLE_TEST2'));
@@ -48,6 +48,24 @@ class RolesContainerTest extends TestCase
         return $container;
     }
 
+    public function testHasRole(): void
+    {
+        $container = new RolesContainer(['ROLE_ADMIN' => ['ROLE_USER']]);
+
+        $this->assertTrue($container->hasRole('ROLE_USER'));
+        $this->assertFalse($container->hasRole('ROLE_GUEST'));
+        $this->assertTrue($container->addRole('ROLE_GUEST')->hasRole('ROLE_GUEST'));
+        $this->assertSame(['ROLE_ADMIN', 'ROLE_USER', 'ROLE_GUEST'], $container->getRoles());
+    }
+
+    public function testAddInvalidRole(): void
+    {
+        $this->expectException(RoleException::class);
+        $this->expectExceptionMessage('Role must begin with "ROLE_". Input was: ADMIN');
+
+        (new RolesContainer())->addRole('ADMIN');
+    }
+
     public function testClassify(): void
     {
         $container = new RolesContainer(['ROLE_SUPER_ADMIN' => ['ROLE_ADMIN']]);
@@ -55,4 +73,4 @@ class RolesContainerTest extends TestCase
         $this->assertEquals('ROLE_ADMIN', $container->declassifyRole($container->classifyRole('ROLE_ADMIN')));
         $this->assertEquals('RoleSuperAdmin|RoleAdmin', $container->getRolesPattern());
     }
-}
+}

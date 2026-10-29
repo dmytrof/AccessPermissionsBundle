@@ -9,71 +9,88 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Dmytrof\AccessPermissionsBundle\Service;
 
-use Doctrine\Inflector\{Inflector, NoopWordInflector};
 use Dmytrof\AccessPermissionsBundle\Exception\RoleException;
-use Traversable;
+use Doctrine\Inflector\{Inflector, NoopWordInflector};
 
-class RolesContainer implements \IteratorAggregate
+/**
+ * Roles of security role hierarchy (and added ones) used by voters' "can-methods"
+ *
+ * @implements \IteratorAggregate<int, string>
+ */
+class RolesContainer implements \IteratorAggregate, \Countable
 {
-    /**
-     * @var array|string[]
-     */
-	protected $roles;
+    public const ROLE_PREFIX = 'ROLE_';
 
     /**
-     * RolesContainer constructor.
-     * @param array $systemRoles
+     * @var list<string>
      */
-    public function __construct(array $systemRoles)
+    protected array $roles = [];
+
+    private ?Inflector $inflector = null;
+
+    /**
+     * @param array<string, list<string>> $systemRoles role hierarchy: role => inherited roles
+     */
+    public function __construct(array $systemRoles = [])
     {
         $roles = [];
         foreach ($systemRoles as $role => $inheritedRoles) {
             array_push($roles, $role, ...$inheritedRoles);
         }
-        $this->roles = array_unique($roles);
+        $this->roles = array_values(array_unique($roles));
     }
 
     /**
-     * {@inheritdoc}
+     * @return \ArrayIterator<int, string>
      */
-    public function getIterator(): Traversable
+    public function getIterator(): \ArrayIterator
     {
         return new \ArrayIterator($this->roles);
     }
 
+    public function count(): int
+    {
+        return count($this->roles);
+    }
+
     /**
-     * Returns roles
-     * @return array
+     * @return list<string>
      */
     public function getRoles(): array
     {
-        return (array) $this->roles;
+        return $this->roles;
+    }
+
+    public function hasRole(string $role): bool
+    {
+        return in_array($role, $this->roles, true);
     }
 
     /**
-     * returns roles pattern
-     * @return string
+     * Returns regex pattern of classified roles
      */
     public function getRolesPattern(): string
     {
-        return join('|', array_map([$this, 'classifyRole'], $this->getRoles()));
+        return implode('|', array_map($this->classifyRole(...), $this->getRoles()));
     }
 
     /**
-     * Adds role
-     * @param string $role
-     * @return $this
+     * Adds roles
+     *
+     * @throws RoleException when role does not begin with "ROLE_"
      */
-    public function addRole(string $role): self
+    public function addRole(string ...$roles): static
     {
-        foreach (func_get_args() as $role) {
-            if (!substr($role, 0,5) === 'ROLE_') {
-                throw new RoleException(sprintf('Role must begin with "ROLE_"'));
+        foreach ($roles as $role) {
+            if (!str_starts_with($role, self::ROLE_PREFIX)) {
+                throw new RoleException(sprintf('Role must begin with "%s". Input was: %s', self::ROLE_PREFIX, $role));
             }
-            if (!in_array($role, $this->roles)) {
-                array_push($this->roles, $role);
+            if (!$this->hasRole($role)) {
+                $this->roles[] = $role;
             }
         }
 
@@ -81,33 +98,33 @@ class RolesContainer implements \IteratorAggregate
     }
 
     /**
-     * Removes role
-     * @param string $role
-     * @return $this
+     * Removes roles
      */
-    public function removeRole(string $role): self
+    public function removeRole(string ...$roles): static
     {
-        $this->roles = array_diff($this->roles, func_get_args());
+        $this->roles = array_values(array_diff($this->roles, $roles));
+
         return $this;
     }
 
     /**
      * Classifies role (Converts ROLE_ADMIN to RoleAdmin)
-     * @param string $role
-     * @return string
      */
     public function classifyRole(string $role): string
     {
-        return (new Inflector(new NoopWordInflector(), new NoopWordInflector()))->classify(strtolower($role));
+        return $this->getInflector()->classify(strtolower($role));
     }
 
     /**
      * Converts RoleAdmin to ROLE_ADMIN
-     * @param string $classifiedRole
-     * @return string
      */
     public function declassifyRole(string $classifiedRole): string
     {
-        return strtoupper((new Inflector(new NoopWordInflector(), new NoopWordInflector()))->tableize($classifiedRole));
+        return strtoupper($this->getInflector()->tableize($classifiedRole));
+    }
+
+    private function getInflector(): Inflector
+    {
+        return $this->inflector ??= new Inflector(new NoopWordInflector(), new NoopWordInflector());
     }
 }

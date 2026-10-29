@@ -9,30 +9,28 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Dmytrof\AccessPermissionsBundle\Form\Type;
 
 use Symfony\Component\Form\{AbstractType, Extension\Core\Type\CollectionType};
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+/**
+ * Collection of AccessAttributeType
+ */
 class AccessAttributesCollectionType extends AbstractType
 {
-    /**
-     * @inheritDoc
-     */
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'allow_add' => true,
             'allow_delete' => true,
-//            'delete_empty' => true,
             'by_reference' => false,
             'entry_type' => AccessAttributeType::class,
         ]);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getParent(): string
     {
         return CollectionType::class;

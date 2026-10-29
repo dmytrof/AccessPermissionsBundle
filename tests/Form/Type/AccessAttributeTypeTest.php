@@ -9,14 +9,19 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Dmytrof\AccessPermissionsBundle\Tests\Form\Type;
 
 use Dmytrof\AccessPermissionsBundle\Entity\AccessAttribute\{AccessAttribute, Repository};
 use Dmytrof\AccessPermissionsBundle\Form\{DataTransformer\AccessAttributeToStringTransformer, Type\AccessAttributeType};
 use Dmytrof\AccessPermissionsBundle\Service\VotersContainer;
 use Doctrine\Persistence\ManagerRegistry;
+use PHPUnit\Framework\Attributes\{AllowMockObjectsWithoutExpectations, DataProvider};
 use Symfony\Component\Form\{PreloadedExtension, Test\TypeTestCase};
 
+// TypeTestCase mocks the event dispatcher without expectations (PHPUnit 12+ notice)
+#[AllowMockObjectsWithoutExpectations]
 class AccessAttributeTypeTest extends TypeTestCase
 {
     protected const ATTRIBUTE_FOO = 'test.attr.foo';
@@ -24,14 +29,14 @@ class AccessAttributeTypeTest extends TypeTestCase
 
     protected function getExtensions(): array
     {
-        $votersContainer = $this->createMock(VotersContainer::class);
+        $votersContainer = $this->createStub(VotersContainer::class);
         $votersContainer->method('getAllAttributes')->willReturn([
             self::ATTRIBUTE_FOO,
             self::ATTRIBUTE_BAR,
         ]);
-        $repo = $this->createMock(Repository::class);
+        $repo = $this->createStub(Repository::class);
         $repo->method('findItemByAttribute')->willReturn(null);
-        $registry = $this->createMock(ManagerRegistry::class);
+        $registry = $this->createStub(ManagerRegistry::class);
         $registry->method('getRepository')->willReturn($repo);
         $transformer = new AccessAttributeToStringTransformer($registry, $votersContainer);
         // create a type instance with the mocked dependencies
@@ -43,12 +48,8 @@ class AccessAttributeTypeTest extends TypeTestCase
         ];
     }
 
-    /**
-     * @dataProvider getFormData
-     * @param string|null $formData
-     * @param AccessAttribute|null $modelData
-     */
-    public function testSubmitValidData(?string $formData, ?AccessAttribute $modelData)
+    #[DataProvider('getFormData')]
+    public function testSubmitValidData(?string $formData, ?AccessAttribute $modelData): void
     {
         $form = $this->factory->create(AccessAttributeType::class);
         $form->submit($formData);
@@ -77,7 +78,7 @@ class AccessAttributeTypeTest extends TypeTestCase
     /**
      * @return array
      */
-    public function getFormData(): array
+    public static function getFormData(): array
     {
         return [
             [self::ATTRIBUTE_FOO, new AccessAttribute(self::ATTRIBUTE_FOO)],
@@ -85,4 +86,4 @@ class AccessAttributeTypeTest extends TypeTestCase
             [null, null],
         ];
     }
-}
+}

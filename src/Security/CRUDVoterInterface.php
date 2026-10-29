@@ -9,31 +9,17 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Dmytrof\AccessPermissionsBundle\Security;
 
 interface CRUDVoterInterface
 {
-    /**
-     * Returns VIEW attribute
-     * @return string
-     */
     public static function getViewAttribute(): string;
 
-    /**
-     * Returns CREATE attribute
-     * @return string
-     */
     public static function getCreateAttribute(): string;
 
-    /**
-     * Returns EDIT attribute
-     * @return string
-     */
     public static function getEditAttribute(): string;
 
-    /**
-     * Returns DELETE attribute
-     * @return string
-     */
     public static function getDeleteAttribute(): string;
 }

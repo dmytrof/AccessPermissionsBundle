@@ -9,6 +9,8 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Dmytrof\AccessPermissionsBundle\Tests\Security;
 
 use Dmytrof\AccessPermissionsBundle\{Security\ModuleVoter, Service\RolesContainer};
@@ -16,7 +18,7 @@ use PHPUnit\Framework\TestCase;
 
 class ModuleVoterTest extends TestCase
 {
-    public function testVoter()
+    public function testVoter(): void
     {
         $voter = new TestModuleVoter(new RolesContainer(['ROLE_ADMIN' => []]));
 
@@ -27,4 +29,4 @@ class ModuleVoterTest extends TestCase
 class TestModuleVoter extends ModuleVoter
 {
     public const MODULE = 'some_module';
-}
+}

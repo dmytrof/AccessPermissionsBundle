@@ -9,100 +9,79 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Dmytrof\AccessPermissionsBundle\Service;
 
-use Doctrine\Common\Collections\{
-	Collection, ArrayCollection
-};
-
-use Dmytrof\AccessPermissionsBundle\{Exception\VoterException,
-    Model\AttributeDescription,
-    Model\AttributeDescriptionsCollection,
-    Security\AbstractVoter,
-    Security\ModuleVoterInterface};
+use Dmytrof\AccessPermissionsBundle\{Model\AttributeDescription, Model\AttributeDescriptionsCollection, Security\AbstractVoter, Security\ModuleVoterInterface};
+use Doctrine\Common\Collections\{ArrayCollection, Collection};
 use Symfony\Contracts\Translation\TranslatorInterface;
-use Traversable;
 
-class VotersContainer implements \IteratorAggregate
+/**
+ * Voters autoconfigured with "dmytrof.access_permissions.voter" tag (subclasses of AbstractVoter)
+ *
+ * @implements \IteratorAggregate<int, AbstractVoter>
+ */
+class VotersContainer implements \IteratorAggregate, \Countable
 {
     /**
-     * @var Collection|AbstractVoter[]
+     * @var Collection<int, AbstractVoter>
      */
-	protected $voters;
+    protected Collection $voters;
+
+    protected ?AttributeDescriptionsCollection $attributeDescriptionsCollection = null;
 
     /**
-     * @var TranslatorInterface
+     * @param iterable<AbstractVoter> $voters
      */
-	protected $translator;
-
-    /**
-     * @var string
-     */
-	protected $translationDomain;
-
-    /**
-     * @var AttributeDescriptionsCollection
-     */
-	protected $attributeDescriptionsCollection;
-
-    /**
-     * VotersContainer constructor.
-     * @param iterable $voters
-     * @param TranslatorInterface $translator
-     * @param string|null $translationDomain
-     */
-    public function __construct(iterable $voters, TranslatorInterface $translator, ?string $translationDomain = null)
-    {
-        $this->translator = $translator;
-        $this->translationDomain = $translationDomain;
+    public function __construct(
+        iterable $voters,
+        protected TranslatorInterface $translator,
+        protected ?string $translationDomain = null,
+    ) {
         $this->voters = new ArrayCollection();
         foreach ($voters as $voter) {
             $this->addVoter($voter);
         }
     }
 
-    /**
-     * @return TranslatorInterface
-     */
     protected function getTranslator(): TranslatorInterface
     {
         return $this->translator;
     }
 
-    /**
-     * Returns translation domain
-     * @return string|null
-     */
     protected function getTranslationDomain(): ?string
     {
         return $this->translationDomain;
     }
 
     /**
-     * {@inheritdoc}
+     * @return \Traversable<int, AbstractVoter>
      */
-    public function getIterator(): Traversable
+    public function getIterator(): \Traversable
     {
         return $this->voters->getIterator();
     }
 
-    /**
-     * Adds voter
-     * @param AbstractVoter $voter
-     * @return VotersContainer
-     */
-    public function addVoter(AbstractVoter $voter): self
+    public function count(): int
+    {
+        return $this->voters->count();
+    }
+
+    public function addVoter(AbstractVoter $voter): static
     {
         if (!$this->voters->contains($voter)) {
             $this->voters->add($voter);
             $this->attributeDescriptionsCollection = null;
         }
+
         return $this;
     }
 
     /**
-     * Returns all attributes
-     * @return array
+     * Returns attributes of all voters
+     *
+     * @return array<string, string>
      */
     public function getAllAttributes(): array
     {
@@ -110,61 +89,56 @@ class VotersContainer implements \IteratorAggregate
     }
 
     /**
-     * Returns attribute descriptions collection
-     * @return AttributeDescriptionsCollection
+     * Returns attribute descriptions of all voters
      */
     public function getAttributeDescriptionsCollection(): AttributeDescriptionsCollection
     {
-        if (is_null($this->attributeDescriptionsCollection)) {
-            $this->attributeDescriptionsCollection = $this->getAttributeDescriptions($this->voters);
-        }
-        return $this->attributeDescriptionsCollection;
+        return $this->attributeDescriptionsCollection ??= $this->getAttributeDescriptions($this->voters);
     }
 
     /**
      * Returns voters attributes
-     * @param iterable $voters
-     * @return array
+     *
+     * @param iterable<AbstractVoter> $voters
+     *
+     * @return array<string, string>
      */
     public function getVotersAttributes(iterable $voters): array
     {
         $attributes = [];
-        /** @var AbstractVoter $voter */
         foreach ($voters as $voter) {
-            $attributes = array_merge($attributes, array_combine($voter->getAttributes(), $voter->getAttributes()));
+            foreach ($voter::getAttributes() as $attribute) {
+                $attributes[$attribute] = $attribute;
+            }
         }
+
         return $attributes;
     }
 
     /**
-     * Returns attribute descriptions for voters
-     * @param iterable $voters
-     * @return AttributeDescriptionsCollection
+     * Returns attribute descriptions of voters (sorted by attribute)
+     *
+     * @param iterable<AbstractVoter> $voters
      */
     public function getAttributeDescriptions(iterable $voters): AttributeDescriptionsCollection
     {
         $collection = new AttributeDescriptionsCollection();
         foreach ($voters as $voter) {
-            foreach ($voter->getAttributes() as $attribute) {
-                $collection->add(new AttributeDescription($attribute, ($voter instanceof ModuleVoterInterface), $this->getTranslator(), $this->getTranslationDomain()));
+            foreach ($voter::getAttributes() as $attribute) {
+                $collection->add(new AttributeDescription($attribute, $voter instanceof ModuleVoterInterface, $this->getTranslator(), $this->getTranslationDomain()));
             }
         }
+
         return $collection->sort();
     }
 
     /**
-     * Returns module attributes descriptions
-     * @param string $moduleCode
-     * @return AttributeDescriptionsCollection
+     * Returns attributes descriptions of module voters
      */
     public function getModuleAttributeDescriptions(string $moduleCode): AttributeDescriptionsCollection
     {
-        $voters = [];
-        foreach ($this->voters as $voter) {
-            if ($voter instanceof ModuleVoterInterface && $voter->getModule() === $moduleCode) {
-                array_push($voters, $voter);
-            }
-        }
-        return $this->getAttributeDescriptions($voters);
+        return $this->getAttributeDescriptions($this->voters->filter(
+            static fn (AbstractVoter $voter): bool => $voter instanceof ModuleVoterInterface && $voter::getModule() === $moduleCode,
+        ));
     }
 }

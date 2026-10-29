@@ -9,17 +9,26 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Dmytrof\AccessPermissionsBundle\Entity\AccessAttribute;
 
-use Doctrine\ORM\{EntityRepository, NonUniqueResultException};
 use Dmytrof\AccessPermissionsBundle\{Exception\AccessAttributeException, Model\AccessAttribute as AccessAttributeModel};
+use Doctrine\ORM\{EntityRepository, NonUniqueResultException};
 
+/**
+ * @template T of AccessAttributeModel
+ *
+ * @extends EntityRepository<T>
+ */
 class Repository extends EntityRepository
 {
     /**
      * Returns the access attribute by attribute
-     * @param string $attribute
-     * @return AccessAttributeModel|null
+     *
+     * @return T|null
+     *
+     * @throws AccessAttributeException
      */
     public function findItemByAttribute(string $attribute): ?AccessAttributeModel
     {
@@ -30,7 +39,7 @@ class Repository extends EntityRepository
         try {
             return $builder->getQuery()->getOneOrNullResult();
         } catch (NonUniqueResultException $e) {
-            throw new AccessAttributeException($e->getMessage());
+            throw new AccessAttributeException($e->getMessage(), 0, $e);
         }
     }
 }

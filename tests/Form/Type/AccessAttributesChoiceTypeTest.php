@@ -9,6 +9,8 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Dmytrof\AccessPermissionsBundle\Tests\Form\Type;
 
 use Dmytrof\AccessPermissionsBundle\Entity\AccessAttribute\{AccessAttribute, Repository};
@@ -16,8 +18,11 @@ use Dmytrof\AccessPermissionsBundle\Form\{DataTransformer\AccessAttributeToStrin
 use Dmytrof\AccessPermissionsBundle\Service\VotersContainer;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Persistence\ManagerRegistry;
+use PHPUnit\Framework\Attributes\{AllowMockObjectsWithoutExpectations, DataProvider};
 use Symfony\Component\Form\{PreloadedExtension, Test\TypeTestCase};
 
+// TypeTestCase mocks the event dispatcher without expectations (PHPUnit 12+ notice)
+#[AllowMockObjectsWithoutExpectations]
 class AccessAttributesChoiceTypeTest extends TypeTestCase
 {
     protected const ATTRIBUTE_FOO = 'test.attr.foo';
@@ -25,14 +30,14 @@ class AccessAttributesChoiceTypeTest extends TypeTestCase
 
     protected function getExtensions(): array
     {
-        $votersContainer = $this->createMock(VotersContainer::class);
+        $votersContainer = $this->createStub(VotersContainer::class);
         $votersContainer->method('getAllAttributes')->willReturn([
             self::ATTRIBUTE_FOO,
             self::ATTRIBUTE_BAR,
         ]);
-        $repo = $this->createMock(Repository::class);
+        $repo = $this->createStub(Repository::class);
         $repo->method('findItemByAttribute')->willReturn(null);
-        $registry = $this->createMock(ManagerRegistry::class);
+        $registry = $this->createStub(ManagerRegistry::class);
         $registry->method('getRepository')->willReturn($repo);
         $transformer = new AccessAttributeToStringTransformer($registry, $votersContainer);
         // create a type instance with the mocked dependencies
@@ -44,14 +49,8 @@ class AccessAttributesChoiceTypeTest extends TypeTestCase
         ];
     }
 
-    /**
-     * @dataProvider getFormData
-     * @param array|null $formData
-     * @param bool $synchronized
-     * @param $viewData
-     * @param $modelData
-     */
-    public function testSubmitValidData(?array $formData, bool $synchronized, $viewData, $modelData)
+    #[DataProvider('getFormData')]
+    public function testSubmitValidData(?array $formData, bool $synchronized, $viewData, $modelData): void
     {
         $form = $this->factory->create(AccessAttributesChoiceType::class);
         $form->submit($formData);
@@ -82,7 +81,7 @@ class AccessAttributesChoiceTypeTest extends TypeTestCase
     /**
      * @return array
      */
-    public function getFormData(): array
+    public static function getFormData(): array
     {
         return [
             [[self::ATTRIBUTE_FOO, self::ATTRIBUTE_BAR], true, new ArrayCollection([self::ATTRIBUTE_FOO, self::ATTRIBUTE_BAR]), new ArrayCollection([new AccessAttribute(self::ATTRIBUTE_FOO), new AccessAttribute(self::ATTRIBUTE_BAR)])],
@@ -91,4 +90,4 @@ class AccessAttributesChoiceTypeTest extends TypeTestCase
             [null, true, new ArrayCollection(), new ArrayCollection()],
         ];
     }
-}
+}

@@ -1,8 +1,14 @@
 DmytrofAccessPermissionsBundle
 ====================
 
-This bundle helps you to create access permissions for 
-your Symfony 4/5 application
+This bundle helps you to create access permissions for
+your Symfony application
+
+## Requirements
+
+* PHP 8.4 or higher
+* Symfony 6.4, 7.x or 8.x (FrameworkBundle, SecurityBundle, Form, Validator, Translation)
+* Doctrine ORM 3 (with DoctrineBundle)
 
 ## Installation
 
@@ -19,8 +25,24 @@ your Symfony 4/5 application
             // ...
             Dmytrof\AccessPermissionsBundle\DmytrofAccessPermissionsBundle::class => ['all' => true],
         ];
-        
-        
+
+### Step 3: Configure (optional)
+
+    # config/packages/dmytrof_access_permissions.yaml
+    dmytrof_access_permissions:
+        translation_domain: access_attributes # default
+
+`Dmytrof\AccessPermissionsBundle\Entity\AccessAttribute\AccessAttribute` entity (table `dmytrof_access_attribute`)
+is mapped with PHP attributes. It is mapped automatically with `doctrine.orm.auto_mapping: true`, otherwise add the mapping:
+
+    # config/packages/doctrine.yaml
+    doctrine:
+        orm:
+            mappings:
+                DmytrofAccessPermissionsBundle:
+                    type: attribute
+                    is_bundle: true
+
 ## Usage
 
 Read [official documentation for symfony/security](https://symfony.com/doc/current/security.html) 
@@ -103,16 +125,12 @@ and install security component to your project.
 #### 3. Add access check to controller:
 
         //src/Controller/ArticleController.php
-        
-        /**
-         * @Route("/api/articles")
-         */
+
+        #[Route('/api/articles')]
         class ArticleController extends AbstractController
         {
-            /**
-             * @Route("/", methods={"GET"})
-             */
-            public function getAll(Request $request)
+            #[Route('/', methods: ['GET'])]
+            public function getAll(Request $request): Response
             {
                 $this->denyAccessUnlessGranted(ArticleVoter::getViewAttribute());
         
@@ -128,7 +146,7 @@ At this moment AccessDecisionManager "asks" ArticleVoter if canRoleAdmin to view
         /**
          * Checks if admin has access to attribute
          */
-        protected function canRoleAdmin(string $attribute, TokenInterface $token, $subject = null): bool
+        protected function canRoleAdmin(string $attribute, TokenInterface $token, mixed $subject = null): bool
         {
             $admin = $token->getUser();
             if (!$admin instanceof AdminInterface) {
@@ -159,7 +177,7 @@ attribute ArticleVoter::EDIT)
         /**
          * Checks if ROLE_AUTHOR can EDIT the article
          */
-        protected function canRoleAuthorEdit(TokenInterface $token, $subject = null): bool
+        protected function canRoleAuthorEdit(TokenInterface $token, mixed $subject = null): bool
         {
             return $subject instanceof Article  // Subject is Article
                 && $token->getUser() instanceof Author  // Authinticated user is Author
@@ -169,21 +187,17 @@ attribute ArticleVoter::EDIT)
         /**
          * Checks if ROLE_AUTHOR can VIEW, CREATE, DELETE the article
          */
-        protected function canRoleAuthor(string $attribute, TokenInterface $token, $subject = null): bool
+        protected function canRoleAuthor(string $attribute, TokenInterface $token, mixed $subject = null): bool
         {
-            switch($attribute) {
-                case static::VIEW:
-                case static::CREATE:
-                    return true;
-                default:
-                    return false;
-            }
+            return in_array($attribute, [static::VIEW, static::CREATE], true);
         }
         
-**Important to remember:** 
-1. Voter tries to call **canRoleAuthorEdit** first. 
+**Important to remember:**
+1. Voter tries to call **canRoleAuthorEdit** first.
 2. If method not exists **canRoleAuthor**  will be called
 3. If method not exists **can** will be called
+4. Only roles of the token are checked (roles reachable by the role hierarchy are not added),
+   roles unknown to RolesContainer are skipped
 
 #### 4. Add attributes labels and descriptions:
 
@@ -227,9 +241,27 @@ To get all access attributes with descriptions at your API add action to your Us
 
         // src/Controller/UserController.php
         
-        public function getAccessAttributes(VotersContainer $votersContainer)
+        public function getAccessAttributes(VotersContainer $votersContainer): JsonResponse
         {
-            return [
-                'attributes' => $votersContainer->getAttributeDescriptionsCollection()->sort()->getAsArray()
-            ];
+            return new JsonResponse([
+                'attributes' => $votersContainer->getAttributeDescriptionsCollection()->sort()->getAsArray(),
+            ]);
         }
+
+## Upgrading from 1.x (PHP 8.4, Symfony 6.4+, Doctrine ORM 3)
+
+* Doctrine mapping and validation constraints use PHP attributes; `AccessAttribute` model and entity properties are typed
+  (`protected ?int $id`, `protected ?string $attribute`): redeclare them with the same types in your subclasses.
+* Voter methods are typed: `supports(string $attribute, mixed $subject)`,
+  `voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token, ?Vote $vote = null)`,
+  can-methods accept `mixed $subject = null`.
+* Roles of the token unknown to RolesContainer are skipped instead of throwing `BadMethodCallException`.
+* `RolesContainer::addRole()` throws `RoleException` for roles not beginning with `ROLE_`;
+  `addRole()` and `removeRole()` are variadic.
+* `AccessAttributeType` uses a copy of the transformer for every form (the shared transformer is not changed).
+* Services are defined in `Resources/config/services.php` (only bundle services are registered); `symfony/yaml` is not needed.
+
+## Tests
+
+    $ composer install
+    $ vendor/bin/phpunit

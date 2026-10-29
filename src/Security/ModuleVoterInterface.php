@@ -9,13 +9,14 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Dmytrof\AccessPermissionsBundle\Security;
 
 interface ModuleVoterInterface
 {
     /**
      * Returns module code
-     * @return string
      */
     public static function getModule(): string;
 }

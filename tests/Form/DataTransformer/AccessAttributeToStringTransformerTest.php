@@ -9,6 +9,8 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Dmytrof\AccessPermissionsBundle\Tests\Form\DataTransformer;
 
 use Dmytrof\AccessPermissionsBundle\Entity\AccessAttribute\{AccessAttribute, Repository};
@@ -17,6 +19,7 @@ use Dmytrof\AccessPermissionsBundle\Model\AccessAttribute as AccessAttributeMode
 use Dmytrof\AccessPermissionsBundle\Form\DataTransformer\AccessAttributeToStringTransformer;
 use Dmytrof\AccessPermissionsBundle\Security\AbstractVoter;
 use Dmytrof\AccessPermissionsBundle\Service\{RolesContainer, VotersContainer};
+use PHPUnit\Framework\Attributes\Depends;
 use PHPUnit\Framework\TestCase;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Form\Exception\TransformationFailedException;
@@ -30,11 +33,11 @@ class AccessAttributeToStringTransformerTest extends TestCase
     public function testTransformer(): AccessAttributeToStringTransformer
     {
         $rolesContainer = new RolesContainer(['ROLE_ADMIN' => []]);
-        $repo = $this->createMock(Repository::class);
+        $repo = $this->createStub(Repository::class);
         $repo->method('findItemByAttribute')->willReturn(null);
-        $registry = $this->createMock(ManagerRegistry::class);
+        $registry = $this->createStub(ManagerRegistry::class);
         $registry->method('getRepository')->willReturn($repo);
-        $translator = $this->createMock(TranslatorInterface::class);
+        $translator = $this->createStub(TranslatorInterface::class);
         $transformer = new AccessAttributeToStringTransformer($registry, new VotersContainer([new TestVoterA($rolesContainer), new TestVoterB($rolesContainer)], $translator));
 
         $this->assertCount(4, $transformer->getAttributes());
@@ -44,10 +47,7 @@ class AccessAttributeToStringTransformerTest extends TestCase
         return $transformer;
     }
 
-    /**
-     * @depends testTransformer
-     * @param AccessAttributeToStringTransformer $transformer
-     */
+    #[Depends('testTransformer')]
     public function testTransform(AccessAttributeToStringTransformer $transformer): void
     {
         $this->assertEquals('test.a.view', $transformer->transform(new TestAccessAttribute('test.a.view')));
@@ -59,10 +59,7 @@ class AccessAttributeToStringTransformerTest extends TestCase
         $transformer->setEntityClass(\stdClass::class);
     }
 
-    /**
-     * @depends testTransformer
-     * @param AccessAttributeToStringTransformer $transformer
-     */
+    #[Depends('testTransformer')]
     public function testReverseTransform(AccessAttributeToStringTransformer $transformer): void
     {
         $this->assertInstanceOf(TestAccessAttribute::class, $transformer->reverseTransform('test.a.view'));
@@ -91,4 +88,4 @@ class TestVoterB extends AbstractVoter
         'test.b.view',
         'test.b.create',
     ];
-}
+}

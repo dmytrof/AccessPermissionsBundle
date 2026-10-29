@@ -9,6 +9,8 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Dmytrof\AccessPermissionsBundle\Tests\Security;
 
 use Dmytrof\AccessPermissionsBundle\{Model\AccessAttribute, Security\AbstractVoter, Service\RolesContainer};
@@ -16,7 +18,7 @@ use PHPUnit\Framework\TestCase;
 
 class AbstractVoterTest extends TestCase
 {
-    public function testVoter()
+    public function testVoter(): void
     {
         $voter = new TestVoter(new RolesContainer(['ROLE_ADMIN' => []]));
 
@@ -45,4 +47,4 @@ class TestVoter extends AbstractVoter
         self::VIEW,
         self::EDIT,
     ];
-}
+}

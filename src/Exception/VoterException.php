@@ -9,9 +9,9 @@
  * file that was distributed with this source code.
  */
 
-namespace Dmytrof\AccessPermissionsBundle\Exception;
+declare(strict_types=1);
 
-use Dmytrof\AccessPermissionsBundle\Exception\RuntimeException;
+namespace Dmytrof\AccessPermissionsBundle\Exception;
 
 class VoterException extends RuntimeException
 {

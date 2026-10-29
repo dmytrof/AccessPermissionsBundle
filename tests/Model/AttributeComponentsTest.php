@@ -9,6 +9,8 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Dmytrof\AccessPermissionsBundle\Tests\Model;
 
 use Dmytrof\AccessPermissionsBundle\Model\AttributeComponents;
@@ -16,7 +18,7 @@ use PHPUnit\Framework\TestCase;
 
 class AttributeComponentsTest extends TestCase
 {
-    public function testWithoutModule()
+    public function testWithoutModule(): void
     {
         $parts = ['dmytrof','test','attribute'];
         $attribute = join('.', $parts);
@@ -40,7 +42,7 @@ class AttributeComponentsTest extends TestCase
         ], $attributeComponents->getAttributeLabelKeys());
     }
 
-    public function testWithModule()
+    public function testWithModule(): void
     {
         $parts = ['dmytrof','article','test','attribute'];
         $attribute = join('.', $parts);
@@ -64,4 +66,4 @@ class AttributeComponentsTest extends TestCase
             'dmytrof.attributes.attribute.label',
         ], $attributeComponents->getAttributeLabelKeys());
     }
-}
+}

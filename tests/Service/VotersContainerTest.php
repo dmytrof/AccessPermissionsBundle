@@ -9,6 +9,8 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Dmytrof\AccessPermissionsBundle\Tests\Service;
 
 use Dmytrof\AccessPermissionsBundle\Security\AbstractVoter;
@@ -17,6 +19,7 @@ use Dmytrof\AccessPermissionsBundle\Security\Traits\ModuleVoterTrait;
 use Dmytrof\AccessPermissionsBundle\Service\RolesContainer;
 use Dmytrof\AccessPermissionsBundle\Service\VotersContainer;
 use Doctrine\Common\Collections\Collection;
+use PHPUnit\Framework\Attributes\Depends;
 use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -37,7 +40,7 @@ class VotersContainerTest extends TestCase
      */
     public function testCreateVotersContainer(): VotersContainer
     {
-        $translator = $this->createMock(TranslatorInterface::class);
+        $translator = $this->createStub(TranslatorInterface::class);
 
         $container = new VotersContainer([new VoterA($this->rolesContainer), new VoterB($this->rolesContainer)], $translator);
         $this->assertCount(2, $container);
@@ -46,11 +49,7 @@ class VotersContainerTest extends TestCase
         return $container;
     }
 
-    /**
-     * @depends testCreateVotersContainer
-     * @param VotersContainer $container
-     * @return VotersContainer
-     */
+    #[Depends('testCreateVotersContainer')]
     public function testAddVoters(VotersContainer $container): VotersContainer
     {
         $this->assertInstanceOf(VotersContainer::class, $container->addVoter(new VoterC($this->rolesContainer)));
@@ -59,10 +58,7 @@ class VotersContainerTest extends TestCase
         return $container;
     }
 
-    /**
-     * @depends testAddVoters
-     * @param VotersContainer $container
-     */
+    #[Depends('testAddVoters')]
     public function testAttributes(VotersContainer $container): void
     {
         $this->assertCount(6, $container->getAllAttributes());
@@ -104,4 +100,4 @@ class VoterC extends AbstractVoter implements ModuleVoterInterface
         'test.module_c.c.view',
         'test.module_c.c.create',
     ];
-}
+}

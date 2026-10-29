@@ -9,49 +9,42 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Dmytrof\AccessPermissionsBundle\Security\Traits;
 
 use Dmytrof\AccessPermissionsBundle\{Exception\RuntimeException, Security\AbstractVoter};
 
+/**
+ * Implements CRUDVoterInterface with VIEW, CREATE, EDIT and DELETE constants of AbstractVoter
+ */
 trait CRUDVoterTrait
 {
-    /**
-     * Returns VIEW attribute
-     * @return string
-     */
     public static function getViewAttribute(): string
     {
         self::_checkCRUDRequirements();
+
         return static::getConstant('VIEW');
     }
 
-    /**
-     * Returns CREATE attribute
-     * @return string
-     */
     public static function getCreateAttribute(): string
     {
         self::_checkCRUDRequirements();
+
         return static::getConstant('CREATE');
     }
 
-    /**
-     * Returns EDIT attribute
-     * @return string
-     */
     public static function getEditAttribute(): string
     {
         self::_checkCRUDRequirements();
+
         return static::getConstant('EDIT');
     }
 
-    /**
-     * Returns DELETE attribute
-     * @return string
-     */
     public static function getDeleteAttribute(): string
     {
         self::_checkCRUDRequirements();
+
         return static::getConstant('DELETE');
     }
 
@@ -60,8 +53,8 @@ trait CRUDVoterTrait
      */
     private static function _checkCRUDRequirements(): void
     {
-        if (!is_subclass_of(static::class, AbstractVoter::class) ) {
-            throw new RuntimeException(sprintf('%s is not extends %s interface', static::class, AbstractVoter::class));
+        if (!is_subclass_of(static::class, AbstractVoter::class)) {
+            throw new RuntimeException(sprintf('%s does not extend %s', static::class, AbstractVoter::class));
         }
     }
 }

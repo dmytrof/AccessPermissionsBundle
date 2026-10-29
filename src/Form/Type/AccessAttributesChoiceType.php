@@ -9,35 +9,25 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Dmytrof\AccessPermissionsBundle\Form\Type;
 
 use Dmytrof\AccessPermissionsBundle\Form\DataTransformer\AccessAttributeToStringTransformer;
 use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Form\{AbstractType, CallbackTransformer, Extension\Core\Type\ChoiceType, FormBuilderInterface};
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\{AbstractType,
-    CallbackTransformer,
-    Extension\Core\Type\ChoiceType,
-    FormBuilderInterface};
 
+/**
+ * Choice of access attributes: submitted attributes are transformed to collection of access attribute entities
+ */
 class AccessAttributesChoiceType extends AbstractType
 {
-    /**
-     * @var AccessAttributeToStringTransformer
-     */
-    protected $transformer;
-
-    /**
-     * AccessAttributesChoiceType constructor.
-     * @param AccessAttributeToStringTransformer $transformer
-     */
-    public function __construct(AccessAttributeToStringTransformer $transformer)
-    {
-        $this->transformer = $transformer;
+    public function __construct(
+        protected AccessAttributeToStringTransformer $transformer,
+    ) {
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
@@ -48,9 +38,6 @@ class AccessAttributesChoiceType extends AbstractType
         ]);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
@@ -58,25 +45,21 @@ class AccessAttributesChoiceType extends AbstractType
             ->resetModelTransformers();
 
         $transformer = $this->transformer;
-        $builder->addViewTransformer(new CallbackTransformer(function ($value) {
-            return $value;
-        }, function ($value) use ($transformer) {
-            $collection = new ArrayCollection();
-            if (is_array($value)) {
-                foreach ($value as $val) {
-                    $entity = $transformer->reverseTransform($val);
-                    if ($entity) {
+        $builder->addViewTransformer(new CallbackTransformer(
+            static fn (mixed $value): mixed => $value,
+            static function (mixed $value) use ($transformer): ArrayCollection {
+                $collection = new ArrayCollection();
+                foreach (is_array($value) ? $value : [] as $attribute) {
+                    if ($entity = $transformer->reverseTransform($attribute)) {
                         $collection->add($entity);
                     }
                 }
-            }
-            return $collection;
-        }));
+
+                return $collection;
+            },
+        ));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getParent(): string
     {
         return ChoiceType::class;

@@ -9,19 +9,21 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Dmytrof\AccessPermissionsBundle\Security\Traits;
 
 use Dmytrof\AccessPermissionsBundle\{Exception\RuntimeException, Security\AbstractVoter};
 
+/**
+ * Implements ModuleVoterInterface with MODULE constant of AbstractVoter
+ */
 trait ModuleVoterTrait
 {
-    /**
-     * Returns module code
-     * @return string
-     */
     public static function getModule(): string
     {
         self::_checkModuleRequirements();
+
         return static::getConstant('MODULE');
     }
 
@@ -30,8 +32,8 @@ trait ModuleVoterTrait
      */
     private static function _checkModuleRequirements(): void
     {
-        if (!is_subclass_of(static::class, AbstractVoter::class) ) {
-            throw new RuntimeException(sprintf('%s is not extends %s interface', static::class, AbstractVoter::class));
+        if (!is_subclass_of(static::class, AbstractVoter::class)) {
+            throw new RuntimeException(sprintf('%s does not extend %s', static::class, AbstractVoter::class));
         }
     }
 }

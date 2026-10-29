@@ -9,76 +9,49 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Dmytrof\AccessPermissionsBundle\Model;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
-class AccessAttribute
+class AccessAttribute implements \Stringable
 {
-    /**
-     * ID
-     * @var integer
-     */
-    protected $id;
+    protected ?int $id = null;
 
-    /**
-     * Attribute
-     * @var string
-     *
-     * @Assert\NotBlank
-     */
-    protected $attribute;
+    #[Assert\NotBlank]
+    protected ?string $attribute = null;
 
-    /**
-     * AccessAttribute constructor.
-     * @param string|null $attribute
-     */
     public function __construct(?string $attribute = null)
     {
         $this->setAttribute($attribute);
     }
 
-    /**
-     * Returns id
-     * @return int|null
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * Sets id
-     * @param int $id
-     * @return AccessAttribute
-     */
-    public function setId(int $id): self
+    public function setId(int $id): static
     {
         $this->id = $id;
+
         return $this;
     }
 
-    /**
-     * Returns attribute
-     * @return null|string
-     */
     public function getAttribute(): ?string
     {
         return $this->attribute;
     }
 
-    /**
-     * Sets attribute
-     * @param null|string $attribute
-     * @return AccessAttribute
-     */
-    public function setAttribute(?string $attribute): self
+    public function setAttribute(?string $attribute): static
     {
         $this->attribute = $attribute;
+
         return $this;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return (string) $this->getAttribute();
     }

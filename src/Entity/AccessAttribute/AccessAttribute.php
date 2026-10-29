@@ -9,30 +9,25 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Dmytrof\AccessPermissionsBundle\Entity\AccessAttribute;
 
+use Dmytrof\AccessPermissionsBundle\Model\AccessAttribute as Model;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
-use Dmytrof\AccessPermissionsBundle\{
-    Model\AccessAttribute as Model, Entity\AccessAttribute\Repository
-};
 
-/**
- * @ORM\Table(name="dmytrof_access_attribute")
- * @ORM\Entity(repositoryClass=Repository::class)
- * @UniqueEntity(fields={"attribute"})
- */
+#[ORM\Entity(repositoryClass: Repository::class)]
+#[ORM\Table(name: 'dmytrof_access_attribute')]
+#[UniqueEntity(fields: ['attribute'])]
 class AccessAttribute extends Model
 {
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="integer")
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    protected $id;
+    #[ORM\Id]
+    #[ORM\Column(type: Types::INTEGER)]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    protected ?int $id = null;
 
-    /**
-     * @ORM\Column(type="string", nullable=false, unique=true)
-     */
-    protected $attribute;
+    #[ORM\Column(type: Types::STRING, unique: true, nullable: false)]
+    protected ?string $attribute = null;
 }

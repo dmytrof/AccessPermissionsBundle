@@ -9,121 +9,81 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Dmytrof\AccessPermissionsBundle\Model;
 
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class AttributeDescription
+/**
+ * Translated labels and description of access attribute
+ */
+class AttributeDescription implements \Stringable
 {
-    /**
-     * @var string
-     */
-    protected $translationDomain;
+    protected AttributeComponents $attributeComponents;
 
-    /**
-     * @var TranslatorInterface
-     */
-    protected $translator;
-
-    /**
-     * @var string
-     */
-    protected $attribute;
-
-    /**
-     * @var AttributeComponents
-     */
-    protected $attributeComponents;
-
-    /**
-     * AttributeDescription constructor.
-     * @param string $attribute
-     * @param bool $useModule
-     * @param TranslatorInterface|null $translator
-     * @param string|null $translationDomain
-     */
-    public function __construct(string $attribute, bool $useModule = false, ?TranslatorInterface $translator = null, ?string $translationDomain = null)
-    {
-        $this->attribute = $attribute;
+    public function __construct(
+        protected string $attribute,
+        bool $useModule = false,
+        protected ?TranslatorInterface $translator = null,
+        protected ?string $translationDomain = null,
+    ) {
         $this->attributeComponents = new AttributeComponents($attribute, $useModule);
-        $this->translator = $translator;
-        $this->translationDomain = $translationDomain;
     }
 
-    /**
-     * Returns attribute
-     * @return string
-     */
     public function getAttribute(): string
     {
         return $this->attribute;
     }
 
-    /**
-     * Returns attribute components
-     * @return AttributeComponents
-     */
     protected function getAttributeComponents(): AttributeComponents
     {
-        if (is_null($this->attributeComponents)) {
-            $this->attributeComponents = new AttributeComponents($this->getAttribute());
-        }
         return $this->attributeComponents;
     }
 
-    /**
-     * Checks if module is used
-     * @return bool
-     */
     protected function isUseModule(): bool
     {
         return $this->getAttributeComponents()->isUseModule();
     }
 
     /**
-     * Translates label key
-     * @param string $labelKey
-     * @return string
+     * Translates label key (returns the key without translator)
      */
     protected function translate(string $labelKey): string
     {
-        return $this->translator ? $this->translator->trans($labelKey, [], $this->translationDomain) : $labelKey;
+        return $this->translator?->trans($labelKey, [], $this->translationDomain) ?? $labelKey;
     }
 
     /**
      * Translates label keys
-     * @param array $labelKeys
-     * @return array
+     *
+     * @param array<array-key, string> $labelKeys
+     *
+     * @return array<array-key, string>
      */
     protected function translateList(array $labelKeys): array
     {
-        if ($this->translator) {
-            foreach ($labelKeys as $key => $title) {
-                $labelKeys[$key] = $this->translate($title);
-            }
-        }
-        return $labelKeys;
+        return array_map($this->translate(...), $labelKeys);
     }
 
     /**
-     * Returns label
-     * @return string
+     * Returns the first translated label of the attribute (or the first label key)
      */
     public function getShortLabel(): string
     {
         $keys = $this->getAttributeComponents()->getAttributeLabelKeys();
         $translations = $this->translateList($keys);
         foreach ($translations as $key => $value) {
-            if ($value != $keys[$key]) {
+            if ($value !== $keys[$key]) {
                 return $value;
             }
         }
-        return array_shift($translations);
+
+        return reset($translations);
     }
 
     /**
-     * Returns label
-     * @return string
+     * Returns label: "[Module > ]Subject > Attribute"
      */
     public function getLabel(): string
     {
@@ -131,55 +91,40 @@ class AttributeDescription
         if ($this->isUseModule()) {
             array_unshift($parts, $this->getModule());
         }
-        return join(' > ', $parts);
+
+        return implode(' > ', $parts);
     }
 
-    /**
-     * Returns description
-     * @return null|string
-     */
     public function getDescription(): ?string
     {
         $descriptionKey = $this->getAttributeComponents()->getAttributeDescriptionKey();
         $description = $this->translate($descriptionKey);
-        return $description != $descriptionKey ? $description : null;
+
+        return $description !== $descriptionKey ? $description : null;
     }
 
-    /**
-     * Returns vendor
-     * @return string
-     */
     public function getVendor(): string
     {
         return $this->translate($this->getAttributeComponents()->getVendorLabelKey());
     }
 
-    /**
-     * Returns module
-     * @return string|null
-     */
     public function getModule(): ?string
     {
         return $this->isUseModule() ? $this->translate($this->getAttributeComponents()->getModuleLabelKey()) : null;
     }
 
-    /**
-     * Returns subject
-     * @return string
-     */
     public function getSubject(): string
     {
         return $this->translate($this->getAttributeComponents()->getSubjectLabelKey());
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return $this->getAttribute();
     }
 
     /**
-     * Transforms attributeDescription to array
-     * @return array
+     * @return array{attribute: string, shortLabel: string, label: string, description: ?string, vendor: string, module: ?string, subject: string}
      */
     public function toArray(): array
     {
@@ -189,7 +134,7 @@ class AttributeDescription
             'label' => $this->getLabel(),
             'description' => $this->getDescription(),
             'vendor' => $this->getVendor(),
-            'module' => $this->isUseModule() ? $this->getModule() : null,
+            'module' => $this->getModule(),
             'subject' => $this->getSubject(),
         ];
     }

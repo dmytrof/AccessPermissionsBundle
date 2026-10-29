@@ -9,13 +9,16 @@
  * file that was distributed with this source code.
  */
 
+declare(strict_types=1);
+
 namespace Dmytrof\AccessPermissionsBundle\Security;
 
 interface AdminInterface
 {
     /**
      * Returns admin access attributes
-     * @return array
+     *
+     * @return array<string|\Stringable>
      */
     public function getAdminAccessAttributes(): array;
 }
